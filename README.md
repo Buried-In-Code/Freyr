@@ -1,6 +1,6 @@
 # Freyr
 
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11-green?style=flat-square)
+![Python](https://img.shields.io/badge/Python-3.11-green?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-Beta-yellowgreen?style=flat-square)
 
 [![Hatch](https://img.shields.io/badge/Packaging-Hatch-4051b5?style=flat-square)](https://github.com/pypa/hatch)

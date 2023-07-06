@@ -1,10 +1,6 @@
 __all__ = ["Settings"]
 
-try:
-    import tomllib as tomlreader  # Python >= 3.11
-except ModuleNotFoundError:
-    import tomli as tomlreader  # Python < 3.11
-
+import tomllib as tomlreader
 from pathlib import Path
 from typing import ClassVar, Self
 
