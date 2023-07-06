@@ -1,5 +1,3 @@
-<img src="./static/img/logo.png" align="left" width="128" height="128" alt="Freyr Logo"/>
-
 # Freyr
 
 ![Python](https://img.shields.io/badge/Python-3.11-green?style=flat-square)
