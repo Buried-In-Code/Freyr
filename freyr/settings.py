@@ -1,6 +1,10 @@
 __all__ = ["Settings"]
 
-import tomllib as tomlreader
+try:
+    import tomllib as tomlreader  # Python >= 3.11
+except ModuleNotFoundError:
+    import tomli as tomlreader  # Python < 3.11
+
 from pathlib import Path
 from typing import ClassVar, Self
 
@@ -20,9 +24,9 @@ class SettingsModel(
 ):
     pass
 
+
 class DatabaseSettings(SettingsModel):
     name: str = "freyr.sqlite"
-
 
 
 class WebsiteSettings(SettingsModel):

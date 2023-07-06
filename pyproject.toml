@@ -14,6 +14,7 @@ classifiers = [
   "Operating System :: MacOS",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Typing :: Typed"
 ]
@@ -22,6 +23,7 @@ dependencies = [
   "jinja2 >= 3.1.2",
   "pony >= 0.7.16",
   "rich >= 13.4.2",
+  "tomli >= 2.0.1; python_version < \"3.11\"",
   "tomli-w >= 1.0.0",
   "uvicorn >= 0.22.0"
 ]
@@ -31,7 +33,7 @@ keywords = []
 license = {text = "MIT"}
 name = "freyr"
 readme = "README.md"
-requires-python = ">= 3.11"
+requires-python = ">= 3.10"
 
 [project.optional-dependencies]
 dev = [
@@ -45,7 +47,7 @@ Source = "https://github.com/Buried-In-Code/Freyr"
 
 [tool.black]
 line-length = 100
-target-version = ["py311"]
+target-version = ["py310"]
 
 [tool.hatch.version]
 path = "freyr/__init__.py"
@@ -112,7 +114,7 @@ select = [
   "YTT"
 ]
 show-fixes = true
-target-version = "py311"
+target-version = "py310"
 
 [tool.ruff.flake8-annotations]
 allow-star-arg-any = true
