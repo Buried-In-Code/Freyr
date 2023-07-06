@@ -2,7 +2,7 @@ __all__ = ["router"]
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Query, HTTPException
+from fastapi import APIRouter, Body, HTTPException
 from pony.orm import db_session
 
 from freyr.database.tables import Device, Entry

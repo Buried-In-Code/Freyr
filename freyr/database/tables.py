@@ -9,6 +9,7 @@ from freyr.models import Device as DeviceModel, Entry as EntryModel
 
 db = Database()
 
+
 class Device(db.Entity):
     _table_ = "devices"
 
@@ -18,9 +19,10 @@ class Device(db.Entity):
 
     def to_model(self) -> DeviceModel:
         return DeviceModel(
-            name = self.name,
-            entries = reversed(sorted({x.to_model() for x in self.entries})),
+            name=self.name,
+            entries=reversed(sorted({x.to_model() for x in self.entries})),
         )
+
 
 class Entry(db.Entity):
     _table_ = "entries"
@@ -35,7 +37,7 @@ class Entry(db.Entity):
 
     def to_model(self) -> EntryModel:
         return EntryModel(
-            timestamp = self.timestamp,
-            temperature = self.temperature,
-            humidity = self.humidity,
+            timestamp=self.timestamp,
+            temperature=self.temperature,
+            humidity=self.humidity,
         )
