@@ -61,108 +61,45 @@ function changeTheme(){
   setTheme();
 }
 
-function createGraph(elementId, data) {
-  val tData = [];
-  val hData = [];
-  data.forEach((entry) => {
-    tData.push({
-      x: entry.timestamp,
-      y: entry.temperature,
-    });
-    hData.push({
-      x: entry.timestamp,
-      y: entry.humidity,
-    });
-  });
-
-  var config = {
-    type: "scatter",
-    data: {
-      datasets: [
-        {
-          label: "Temperature",
-          backgroundColor: "#F00",
-          borderColor: "#F00",
-          data: tData,
-          fill: false,
-          yAxisID: "yTem"
-        },
-        {
-          label: "Humidity",
-          backgroundColor: "#00F",
-          borderColor: "#00F",
-          data: hData,
-          fill: false,
-          yAxisID: "yHum"
-        }
-      ]
-    },
-    options: {
-      animation: false,
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        }
-      },
-      scales: {
-        x: {
-          type: "time",
-          position: "bottom"
-        },
-        yTem: {
-          type: "linear",
-          display: true,
-          position: "left",
-          id: "temperature-y-axis",
-          scaleLabel: {
-            display: true,
-            labelString: "Temperature",
-          },
-          ticks: {
-            callback: function (value, index, values) {
-              return value + "°C"
-            }
-          }
-        },
-        yHum: {
-          type: "linear",
-          display: true,
-          position: "right",
-          id: "humidity-y-axis",
-          grid: {
-            display: false,
-          },
-          scaleLabel: {
-            display: true,
-            labelString: "Humidity",
-          },
-          ticks: {
-            callback: function (value, index, values) {
-              return value + "%"
-            }
-          }
-        }
-      }
-    }
-  }
-  let ctx = document.getElementById(elementId);
-  new Chart(ctx, config);
+function statEntry(id, value) {
+  return `<h4 class="subtitle has-text-centered has-text-info" id="${id}">${value}</h4>`
 }
 
-function updateCharts(){
-  console.log("Updating")
-  fetch("/api/stats", {
+function createColumn(device) {
+  let timeEntry = `<p class="has-text-centered" id="${device}-time">{time}</p>`;
+  let tempEntry = statEntry(`${device}-temp`, "{temp}")
+  let humidEntry = statEntry(`${device}-humid`, "{humid}")
+  let newColumn = `<div class="box has-text-centered" id="${device}"><h3 class="subtitle">${device}</h3><div class="columns is-mobile"><div class="column is-half">${tempEntry}</div><div class="column is-half">${humidEntry}</div></div>${timeEntry}</div>`;
+  let columnsRoot = document.getElementById("content");
+  columnsRoot.insertAdjacentHTML("beforeend",newColumn);
+}
+
+function updateStats() {
+  fetch("/api/devices", {
     method: "GET",
     headers: headers
   }).then((response) => {
     if (!response.ok)
       return Promise.reject(response);
     response.json().then((data) => {
-      createGraph("device-1", data[0].entries);
+      data.forEach((entry) => {
+        let column = document.getElementById(entry.device)
+        if (column == null)
+          createColumn(entry.device)
+        if (entry.entries.length > 0)
+          updateColumn(entry.device, entry.entries[0])
+      })
     });
   }).catch((response) => response.json().then((msg) => {
     alert(`${response.status} ${response.statusText} => ${msg.details}`)
   }));
+}
+
+function updateColumn(device, entry){
+  let timeLabel = document.getElementById(`${device}-time`);
+  timeLabel.textContent = moment(entry.timestamp, "YYYY-MM-DD[T]hh:mm:ss").fromNow();
+  let tempLabel = document.getElementById(`${device}-temp`);
+  tempLabel.textContent = `${entry.temperature}°C`;
+  let humidLabel = document.getElementById(`${device}-humid`);
+  humidLabel.textContent = `${entry.humidity}%`;
 }

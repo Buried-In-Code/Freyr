@@ -19,7 +19,7 @@ class Device(db.Entity):
     def to_model(self) -> DeviceModel:
         return DeviceModel(
             name = self.name,
-            entries = sorted({x.to_model() for x in self.entries}),
+            entries = reversed(sorted({x.to_model() for x in self.entries})),
         )
 
 class Entry(db.Entity):
