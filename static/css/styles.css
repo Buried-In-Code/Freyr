@@ -1,3 +1,8 @@
+@font-face {
+  font-family: digital;
+  src: url("/static/fonts/DS-DIGIB.TTF");
+}
+
 html, body {
   min-height: 100vh;
   display: flex;
@@ -6,4 +11,9 @@ html, body {
 
 body > footer {
   margin-top: auto;
+}
+
+.metric {
+  font-family: digital;
+  font-size: 6vh;
 }

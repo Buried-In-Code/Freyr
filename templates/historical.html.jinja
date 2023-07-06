@@ -10,15 +10,19 @@
   <link disabled href="/static/css/custom-bulma-light.css" id="light-theme" rel="stylesheet">
 </head>
 <body class="has-navbar-fixed-top">
+  {% include "components/navbar.jinja" %}
   <main class="section">
-    <div class="container" id="content">
+    <div class="container">
       <header class="block has-text-centered">
         <h1 class="title is-1">Freyr</h1>
       </header>
+      <div class="columns is-centered is-multiline" id="content">
+      </div>
     </div>
   </main>
   {% include "components/footer.jinja" %}
   <script src="https://cdn.jsdelivr.net/npm/moment@^2.29"></script>
+  <script src="/static/js/bulma-navbar.js" type="text/javascript"></script>
   <script src="/static/js/scripts.js" type="text/javascript"></script>
   <script type="text/javascript">
     ready(updateStats);
