@@ -76,7 +76,7 @@
       humidLabel.textContent = `${entry.humidity}%`;
     }
     ready(updateStats);
-    setInterval(updateStats, 5000);
+    setInterval(updateStats, 1000 * 30); // Wait 30seconds
   </script>
 </body>
 </html>
