@@ -45,6 +45,5 @@ class Device(BaseModel, populate_by_name=True):
 
 class NewEntry(BaseModel):
     device: str
-    timestamp: datetime
     temperature: Decimal
     humidity: Decimal

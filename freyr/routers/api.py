@@ -1,5 +1,6 @@
 __all__ = ["router"]
 
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException
 from pony.orm import db_session
@@ -23,7 +24,7 @@ def add_stat(entry: NewEntry) -> None:
             device = Device(name=entry.device)
         Entry(
             device=device,
-            timestamp=entry.timestamp,
+            timestamp=datetime.now(),
             temperature=entry.temperature,
             humidity=entry.humidity,
         )
