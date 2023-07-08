@@ -53,12 +53,12 @@
           if (devices.length > 0) {
             if (noContent != null)
               noContent.parentNode.removeChild(noContent);
-            devices.forEach((entry) => {
-              let column = document.getElementById(entry.device);
+            devices.forEach((device) => {
+              let column = document.getElementById(device.name);
               if (column == null)
-                createColumn(entry.device);
-              if (entry.entries.length > 0)
-                updateColumn(entry.device, entry.entries[0]);
+                createColumn(device.name);
+              if (device.entries.length > 0)
+                updateColumn(device.name, device.entries[0]);
             });
           } else if (noContent == null)
             createNoContent()

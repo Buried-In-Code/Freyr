@@ -1,12 +1,11 @@
 __all__ = ["router"]
 
-from typing import Annotated
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, HTTPException
 from pony.orm import db_session
 
 from freyr.database.tables import Device, Entry
-from freyr.models import Device as DeviceModel, Entry as EntryModel
+from freyr.models import Device as DeviceModel, NewEntry
 from freyr.responses import ErrorResponse
 
 router = APIRouter(
@@ -17,13 +16,13 @@ devices_router = APIRouter(prefix="/devices", tags=["Devices"])
 
 
 @devices_router.post(path="", status_code=204)
-def add_stat(entry: EntryModel, device: Annotated[str, Body()]) -> None:
+def add_stat(entry: NewEntry) -> None:
     with db_session:
-        _device = Device.get(name=device)
-        if not _device:
-            _device = Device(name=device)
+        device = Device.get(name=entry.device)
+        if not device:
+            device = Device(name=entry.device)
         Entry(
-            device=_device,
+            device=device,
             timestamp=entry.timestamp,
             temperature=entry.temperature,
             humidity=entry.humidity,

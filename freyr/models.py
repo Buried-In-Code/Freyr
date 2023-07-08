@@ -26,7 +26,7 @@ class Entry(BaseModel):
 
 
 class Device(BaseModel, populate_by_name=True):
-    name: str = Field(alias="device")
+    name: str
     entries: list[Entry] = Field(default_factory=list)
 
     def __lt__(self, other) -> int:  # noqa: ANN001
@@ -41,3 +41,10 @@ class Device(BaseModel, populate_by_name=True):
 
     def __hash__(self):
         return hash((type(self), self.name))
+
+
+class NewEntry(BaseModel):
+    device: str
+    timestamp: datetime
+    temperature: Decimal
+    humidity: Decimal
