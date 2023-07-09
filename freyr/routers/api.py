@@ -1,14 +1,16 @@
 __all__ = ["router"]
 
+import logging
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Body, HTTPException
 from pony.orm import db_session
 
 from freyr.database.tables import Device, Entry
 from freyr.models import Device as DeviceModel, NewEntry
 from freyr.responses import ErrorResponse
 
+LOGGER = logging.getLogger(__name__)
 router = APIRouter(
     prefix="/api",
     responses={422: {"description": "Validation error", "model": ErrorResponse}},
@@ -28,6 +30,11 @@ def add_stat(entry: NewEntry) -> None:
             temperature=entry.temperature,
             humidity=entry.humidity,
         )
+
+
+@devices_router.post(path="/error", status_code=204)
+def device_error(error: str = Body(embed=True)) -> None:
+    LOGGER.error(error)
 
 
 @devices_router.get(path="")

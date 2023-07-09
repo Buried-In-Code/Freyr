@@ -1,4 +1,4 @@
-__all__ = ["Device", "Entry"]
+__all__ = ["Device", "Entry", "NewEntry"]
 
 from datetime import datetime
 from decimal import Decimal
