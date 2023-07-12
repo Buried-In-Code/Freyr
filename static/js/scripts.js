@@ -60,3 +60,5 @@ function changeTheme(){
   document.cookie = `theme=${newTheme};path=/;max-age=${60*60*24*30};SameSite=Strict`;
   setTheme();
 }
+
+ready(setTheme);

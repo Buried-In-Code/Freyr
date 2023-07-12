@@ -1,4 +1,4 @@
-__all__ = ["Device", "Entry", "NewEntry"]
+__all__ = ["DeviceModel", "LatestDeviceModel", "AggregateModel", "ReadingModel", "NewReading"]
 
 from datetime import datetime
 from decimal import Decimal
@@ -6,18 +6,18 @@ from decimal import Decimal
 from pydantic import BaseModel, Field
 
 
-class Entry(BaseModel):
+class ReadingModel(BaseModel):
     timestamp: datetime
     temperature: Decimal
     humidity: Decimal
 
     def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, Entry):
+        if not isinstance(other, ReadingModel):
             raise NotImplementedError
         return self.timestamp < other.timestamp
 
     def __eq__(self, other) -> bool:  # noqa: ANN001
-        if not isinstance(other, Entry):
+        if not isinstance(other, ReadingModel):
             raise NotImplementedError
         return self.timestamp == other.timestamp
 
@@ -25,17 +25,17 @@ class Entry(BaseModel):
         return hash((type(self), self.timestamp))
 
 
-class Device(BaseModel, populate_by_name=True):
+class DeviceModel(BaseModel):
     name: str
-    entries: list[Entry] = Field(default_factory=list)
+    readings: list[ReadingModel] = Field(default_factory=list)
 
     def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, Device):
+        if not isinstance(other, DeviceModel):
             raise NotImplementedError
         return self.name < other.name
 
     def __eq__(self, other) -> bool:  # noqa: ANN001
-        if not isinstance(other, Device):
+        if not isinstance(other, DeviceModel):
             raise NotImplementedError
         return self.name == other.name
 
@@ -43,7 +43,32 @@ class Device(BaseModel, populate_by_name=True):
         return hash((type(self), self.name))
 
 
-class NewEntry(BaseModel):
+class LatestDeviceModel(BaseModel):
+    name: str
+    reading: ReadingModel | None = None
+
+    def __lt__(self, other) -> int:  # noqa: ANN001
+        if not isinstance(other, LatestDeviceModel):
+            raise NotImplementedError
+        return self.name < other.name
+
+    def __eq__(self, other) -> bool:  # noqa: ANN001
+        if not isinstance(other, LatestDeviceModel):
+            raise NotImplementedError
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash((type(self), self.name))
+
+
+class AggregateModel(BaseModel):
+    year: list[DeviceModel] = Field(default_factory=list)
+    month: list[DeviceModel] = Field(default_factory=list)
+    day: list[DeviceModel] = Field(default_factory=list)
+    hour: list[DeviceModel] = Field(default_factory=list)
+
+
+class NewReading(BaseModel):
     device: str
     temperature: Decimal
     humidity: Decimal

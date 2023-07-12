@@ -14,7 +14,7 @@
   <main class="section">
     <div class="container">
       <header class="block has-text-centered">
-        <h1 class="title is-1">Freyr</h1>
+        <h1 class="title is-1">Current</h1>
       </header>
       <div class="columns is-centered is-multiline" id="content">
       </div>
@@ -24,59 +24,10 @@
   <script src="https://cdn.jsdelivr.net/npm/moment@^2.29"></script>
   <script src="/static/js/bulma-navbar.js" type="text/javascript"></script>
   <script src="/static/js/scripts.js" type="text/javascript"></script>
+  <script src="/static/js/current.js" type="text/javascript"></script>
   <script type="text/javascript">
-    function statEntry(id, value) {
-      return `<h4 class="has-text-centered has-text-info metric" id="${id}">${value}</h4>`
-    }
-    function createColumn(device) {
-      let timeEntry = `<p class="has-text-centered is-pulled-right" id="${device}-time">{time}</p>`;
-      let tempEntry = statEntry(`${device}-temp`, "{temp}")
-      let humidEntry = statEntry(`${device}-humid`, "{humid}")
-      let newColumn = `<div class="column is-7"><div class="box has-text-centered" id="${device}"><div class="columns is-mobile is-multiline"><div class="column is-half"><h2 class="subtitle is-pulled-left">${device}</h2></div><div class="column is-half">${timeEntry}</div><div class="column is-half">${tempEntry}</div><div class="column is-half">${humidEntry}</div></div></div></div>`;
-      let columnsRoot = document.getElementById("content");
-      columnsRoot.insertAdjacentHTML("beforeend", newColumn);
-    }
-    function createNoContent() {
-      let noContent = `<div class="column is-7"><div class="box has-text-centered" id="no-content"><h3 class="subtitle has-text-danger">No devices</h3></div></div>`
-      let columnsRoot = document.getElementById("content");
-      columnsRoot.insertAdjacentHTML("beforeend", noContent);
-    }
-    function updateStats() {
-      fetch("/api/devices", {
-        method: "GET",
-        headers: headers
-      }).then((response) => {
-        if (!response.ok)
-          return Promise.reject(response);
-        response.json().then((devices) => {
-          let noContent = document.getElementById("no-content");
-          if (devices.length > 0) {
-            if (noContent != null)
-              noContent.parentNode.removeChild(noContent);
-            devices.forEach((device) => {
-              let column = document.getElementById(device.name);
-              if (column == null)
-                createColumn(device.name);
-              if (device.entries.length > 0)
-                updateColumn(device.name, device.entries[0]);
-            });
-          } else if (noContent == null)
-            createNoContent()
-        });
-      }).catch((response) => response.json().then((msg) => {
-        alert(`${response.status} ${response.statusText} => ${msg.details}`)
-      }));
-    }
-    function updateColumn(device, entry){
-      let timeLabel = document.getElementById(`${device}-time`);
-      timeLabel.textContent = moment(entry.timestamp, "YYYY-MM-DD[T]hh:mm:ss").fromNow();
-      let tempLabel = document.getElementById(`${device}-temp`);
-      tempLabel.textContent = `${entry.temperature}°C`;
-      let humidLabel = document.getElementById(`${device}-humid`);
-      humidLabel.textContent = `${entry.humidity}%`;
-    }
-    ready(updateStats);
-    setInterval(updateStats, 1000 * 30); // Wait 30seconds
+    ready(getCurrentReadings);
+    setInterval(getCurrentReadings, 1000 * 30); // Wait 30s
   </script>
 </body>
 </html>

@@ -1,3 +1,5 @@
+{% from "components/forms.jinja" import select_number %}
+{% from "components/chart.jinja" import chart %}
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
@@ -14,17 +16,89 @@
   <main class="section">
     <div class="container">
       <header class="block has-text-centered">
-        <h1 class="title is-1">Freyr</h1>
+        <h1 class="title is-1">Historical</h1>
       </header>
-      <div class="columns is-centered is-multiline" id="content">
+      <div class="columns">
+        <div class="column is-one-quarter-tablet is-one-fifth-fullhd">
+          <div class="box">
+            <h5 class="title is-5 has-text-info-light">Filter</h5>
+            <form accept-charset="UTF-8" action="/historical" method="GET">
+              {{ select_number(label="Select Year", name="year", value=year, options=year_list) }}
+              {% if year %}
+                {{ select_number(label="Select Month", name="month", value=month, options=month_list) }}
+                {% if month %}
+                 {{ select_number(label="Select Day", name="day", value=day, options=day_list) }}
+                {% endif %}
+              {% endif %}
+              <div class="buttons is-centered">
+                <button class="button is-info">
+                  <span class="icon">
+                    <i class="fa-solid fa-filter"></i>
+                  </span>
+                  <span>Filter</span>
+                </button>
+                <button class="button is-warning" onclick="resetForm('/historical')" type="button">
+                  <span class="icon">
+                    <i class="fa-solid fa-rotate"></i>
+                  </span>
+                  <span>Reset</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="column">
+          <div class="tabs is-toggle is-fullwidth" id="tabs">
+            <ul>
+              {% for device in device_names %}
+                <li {% if loop.index == 1 %}class="is-active" {% endif %}data-tab="{{ loop.index }}">
+                  <a>{{ device }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div id="tab-content">
+            {% for device in device_names %}
+              <div class="tab-content{% if loop.index == 1 %} is-active{% endif %}" data-content="{{ loop.index }}">
+                {% if day %}
+                  {{ chart(label="Hourly Stats", id=device + "-hourly-stats") }}
+                {% endif %}
+                {% if month %}
+                  {{ chart(label="Daily Stats", id=device + "-daily-stats") }}
+                {% endif %}
+                {% if year %}
+                  {{ chart(label="Monthly Stats", id=device + "-monthly-stats") }}
+                {% endif %}
+                {{ chart(label="Yearly Stats", id=device + "-yearly-stats") }}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
       </div>
     </div>
   </main>
   {% include "components/footer.jinja" %}
-  <script src="https://cdn.jsdelivr.net/npm/moment@^2.29"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@^3.6" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@^4.2" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment@^2.29" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1.0" type="text/javascript"></script>
   <script src="/static/js/bulma-navbar.js" type="text/javascript"></script>
+  <script src="/static/js/bulma-tabs.js" type="text/javascript"></script>
   <script src="/static/js/scripts.js" type="text/javascript"></script>
+  <script src="/static/js/historical.js" type="text/javascript"></script>
   <script type="text/javascript">
+    ready(function() {
+      loadYearlyReadings();
+      {% if year %}
+        loadMonthlyReadings();
+        {% if month %}
+          loadDailyReadings();
+          {% if day %}
+            loadHourlyReadings();
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    });
   </script>
 </body>
 </html>

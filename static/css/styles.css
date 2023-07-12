@@ -17,3 +17,11 @@ body > footer {
   font-family: digital;
   font-size: 6vh;
 }
+
+#tab-content div.tab-content {
+  display: none;
+}
+
+#tab-content div.is-active {
+  display: block;
+}

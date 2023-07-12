@@ -1,11 +1,11 @@
-__all__ = ["db", "Device", "Entry"]
+__all__ = ["db", "Device", "Reading"]
 
 from datetime import datetime
 from decimal import Decimal
 
 from pony.orm import Database, PrimaryKey, Required, Set, composite_key
 
-from freyr.models import Device as DeviceModel, Entry as EntryModel
+from freyr.models import DeviceModel, LatestDeviceModel, ReadingModel
 
 db = Database()
 
@@ -15,19 +15,26 @@ class Device(db.Entity):
 
     device_id: int = PrimaryKey(int, auto=True)
     name: str = Required(str, unique=True)
-    entries: list["Entry"] = Set("Entry")
+    readings: list["Reading"] = Set("Reading")
 
     def to_model(self) -> DeviceModel:
         return DeviceModel(
             name=self.name,
-            entries=reversed(sorted({x.to_model() for x in self.entries})),
+            readings=sorted({x.to_model() for x in self.readings}, reverse=True),
+        )
+
+    def to_latest(self) -> LatestDeviceModel:
+        readings = sorted({x.to_model() for x in self.readings}, reverse=True)
+        return LatestDeviceModel(
+            name=self.name,
+            reading=readings[0] if readings else None,
         )
 
 
-class Entry(db.Entity):
-    _table_ = "entries"
+class Reading(db.Entity):
+    _table_ = "readings"
 
-    entry_id: int = PrimaryKey(int, auto=True)
+    reading_id: int = PrimaryKey(int, auto=True)
     device: Device = Required(Device)
     timestamp: datetime = Required(datetime)
     temperature: Decimal = Required(Decimal)
@@ -35,8 +42,8 @@ class Entry(db.Entity):
 
     composite_key(device, timestamp)
 
-    def to_model(self) -> EntryModel:
-        return EntryModel(
+    def to_model(self) -> ReadingModel:
+        return ReadingModel(
             timestamp=self.timestamp,
             temperature=self.temperature,
             humidity=self.humidity,
