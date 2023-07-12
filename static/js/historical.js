@@ -4,26 +4,26 @@ function resetForm(page) {
 
 function createGraph(elementId, labelList, temperatureData, humidityData) {
   var config = {
-    type: "line",
+    type: "bar",
     data: {
       labels: labelList,
       datasets: [
         {
           label: "Temperature",
-          fill: false,
-          backgroundColor: "#F00",
-          borderColor: "#F00",
+          backgroundColor: "rgba(255,76,76,0.2)",
+          borderColor: "rgba(255,76,76,1)",
+          borderWidth: 2,
+          borderSkipped: false,
           data: temperatureData,
-          steppedLine: false,
           yAxisID: "yTem",
         }, {
           label: "Humidity",
-          fill: false,
-          backgroundColor: "#00F",
-          borderColor: "#00F",
+          backgroundColor: "rgba(76,76,255,0.2)",
+          borderColor: "rgba(76,76,255,1)",
+          borderWidth: 2,
+          borderSkipped: false,
           data: humidityData,
-          steppedLine: false,
-          yAxisID: "yHum"
+          yAxisID: "yHum",
         }
       ]
     },
@@ -76,10 +76,11 @@ function loadYearlyReadings() {
         let labelList = [];
         let temperatureData = [];
         let humidityData = [];
-        device.readings.forEach((reading) => {
-          labelList.push(moment(reading.timestamp).format("YYYY"));
-          temperatureData.push(reading.temperature);
-          humidityData.push(reading.humidity);
+        device.highs.forEach((high, index) => {
+          let low = device.lows[index];
+          labelList.push(moment(high.timestamp).format("YYYY"));
+          temperatureData.push([high.temperature, low.temperature]);
+          humidityData.push([high.humidity, low.humidity]);
         });
         createGraph(`${device.name}-yearly-stats`, labelList, temperatureData, humidityData);
       });
@@ -104,10 +105,11 @@ function loadMonthlyReadings() {
         let labelList = [];
         let temperatureData = [];
         let humidityData = [];
-        device.readings.forEach((reading) => {
-          labelList.push(moment(reading.timestamp).format("MMM"));
-          temperatureData.push(reading.temperature);
-          humidityData.push(reading.humidity);
+        device.highs.forEach((high, index) => {
+          let low = device.lows[index];
+          labelList.push(moment(high.timestamp).format("MMM"));
+          temperatureData.push([high.temperature, low.temperature]);
+          humidityData.push([high.humidity, low.humidity]);
         });
         createGraph(`${device.name}-monthly-stats`, labelList, temperatureData, humidityData);
       });
@@ -133,10 +135,11 @@ function loadDailyReadings() {
         let labelList = [];
         let temperatureData = [];
         let humidityData = [];
-        device.readings.forEach((reading) => {
-          labelList.push(moment(reading.timestamp).format("Do"));
-          temperatureData.push(reading.temperature);
-          humidityData.push(reading.humidity);
+        device.highs.forEach((high, index) => {
+          let low = device.lows[index];
+          labelList.push(moment(high.timestamp).format("Do"));
+          temperatureData.push([high.temperature, low.temperature]);
+          humidityData.push([high.humidity, low.humidity]);
         });
         createGraph(`${device.name}-daily-stats`, labelList, temperatureData, humidityData);
       });
@@ -163,10 +166,11 @@ function loadHourlyReadings() {
         let labelList = [];
         let temperatureData = [];
         let humidityData = [];
-        device.readings.forEach((reading) => {
-          labelList.push(moment(reading.timestamp).format("hhA"));
-          temperatureData.push(reading.temperature);
-          humidityData.push(reading.humidity);
+        device.highs.forEach((high, index) => {
+          let low = device.lows[index];
+          labelList.push(moment(high.timestamp).format("hhA"));
+          temperatureData.push([high.temperature, low.temperature]);
+          humidityData.push([high.humidity, low.humidity]);
         });
         createGraph(`${device.name}-hourly-stats`, labelList, temperatureData, humidityData);
       });

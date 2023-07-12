@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from pony.orm import Database, PrimaryKey, Required, Set, composite_key
 
-from freyr.models import DeviceModel, LatestDeviceModel, ReadingModel
+from freyr.models import DeviceModel, LatestModel, ReadingModel
 
 db = Database()
 
@@ -23,9 +23,9 @@ class Device(db.Entity):
             readings=sorted({x.to_model() for x in self.readings}, reverse=True),
         )
 
-    def to_latest(self) -> LatestDeviceModel:
+    def to_latest(self) -> LatestModel:
         readings = sorted({x.to_model() for x in self.readings}, reverse=True)
-        return LatestDeviceModel(
+        return LatestModel(
             name=self.name,
             reading=readings[0] if readings else None,
         )

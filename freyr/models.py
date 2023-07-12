@@ -1,4 +1,4 @@
-__all__ = ["DeviceModel", "LatestDeviceModel", "AggregateModel", "ReadingModel", "NewReading"]
+__all__ = ["DeviceModel", "LatestModel", "SummaryModel", "ReadingModel", "NewReading"]
 
 from datetime import datetime
 from decimal import Decimal
@@ -43,17 +43,17 @@ class DeviceModel(BaseModel):
         return hash((type(self), self.name))
 
 
-class LatestDeviceModel(BaseModel):
+class LatestModel(BaseModel):
     name: str
     reading: ReadingModel | None = None
 
     def __lt__(self, other) -> int:  # noqa: ANN001
-        if not isinstance(other, LatestDeviceModel):
+        if not isinstance(other, LatestModel):
             raise NotImplementedError
         return self.name < other.name
 
     def __eq__(self, other) -> bool:  # noqa: ANN001
-        if not isinstance(other, LatestDeviceModel):
+        if not isinstance(other, LatestModel):
             raise NotImplementedError
         return self.name == other.name
 
@@ -61,11 +61,23 @@ class LatestDeviceModel(BaseModel):
         return hash((type(self), self.name))
 
 
-class AggregateModel(BaseModel):
-    year: list[DeviceModel] = Field(default_factory=list)
-    month: list[DeviceModel] = Field(default_factory=list)
-    day: list[DeviceModel] = Field(default_factory=list)
-    hour: list[DeviceModel] = Field(default_factory=list)
+class SummaryModel(BaseModel):
+    name: str
+    highs: list[ReadingModel] = Field(default_factory=list)
+    lows: list[ReadingModel] = Field(default_factory=list)
+
+    def __lt__(self, other) -> int:  # noqa: ANN001
+        if not isinstance(other, SummaryModel):
+            raise NotImplementedError
+        return self.name < other.name
+
+    def __eq__(self, other) -> bool:  # noqa: ANN001
+        if not isinstance(other, SummaryModel):
+            raise NotImplementedError
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash((type(self), self.name))
 
 
 class NewReading(BaseModel):
