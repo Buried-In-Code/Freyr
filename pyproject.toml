@@ -131,4 +131,6 @@ max-complexity = 18
 classmethod-decorators = ["classmethod", "pydantic.field_validator"]
 
 [tool.ruff.per-file-ignores]
+"freyr-device/config.py" = ["INP001", "S105"]
+"freyr-device/main.py" = ["ANN001", "ANN201", "BLE001", "I001", "INP001", "T201"]
 "freyr/routers/*" = ["ANN201", "ANN202", "B008"]

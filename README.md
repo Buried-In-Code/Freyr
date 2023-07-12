@@ -12,7 +12,8 @@
 [![Github - License](https://img.shields.io/github/license/Buried-In-Code/Freyr?logo=Github&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Freyr?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Freyr/graphs/contributors)
 
-_TODO_
+Tracks temperature and humidity readings and graphs the results in a web dashboard.\
+Collects readings using Raspberry Pi Pico W and a DHT22 Sensor, _See [freyr-device](freyr-device/) for details._
 
 ## Installation
 
