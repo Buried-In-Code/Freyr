@@ -91,7 +91,7 @@ def yearly_readings() -> list[SummaryModel]:
                 lows[key].temperature = entry.temperature
             if entry.humidity < lows[key].humidity:
                 lows[key].humidity = entry.humidity
-        return sorted(highs.values(), reverse=True), sorted(lows.values(), reverse=True)
+        return sorted(highs.values()), sorted(lows.values())
 
     with db_session:
         output = set()
@@ -134,7 +134,7 @@ def monthly_readings(year: int = 0) -> list[SummaryModel]:
                 lows[key].temperature = entry.temperature
             if entry.humidity < lows[key].humidity:
                 lows[key].humidity = entry.humidity
-        return sorted(highs.values(), reverse=True), sorted(lows.values(), reverse=True)
+        return sorted(highs.values()), sorted(lows.values())
 
     with db_session:
         output = set()
@@ -180,7 +180,7 @@ def daily_readings(year: int = 0, month: int = 0) -> list[SummaryModel]:
                 lows[key].temperature = entry.temperature
             if entry.humidity < lows[key].humidity:
                 lows[key].humidity = entry.humidity
-        return sorted(highs.values(), reverse=True), sorted(lows.values(), reverse=True)
+        return sorted(highs.values()), sorted(lows.values())
 
     with db_session:
         output = set()
@@ -229,7 +229,7 @@ def hourly_readings(year: int = 0, month: int = 0, day: int = 0) -> list[Summary
                 lows[key].temperature = entry.temperature
             if entry.humidity < lows[key].humidity:
                 lows[key].humidity = entry.humidity
-        return sorted(highs.values(), reverse=True), sorted(lows.values(), reverse=True)
+        return sorted(highs.values()), sorted(lows.values())
 
     with db_session:
         output = set()
