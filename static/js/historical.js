@@ -28,10 +28,14 @@ function createGraph(elementId, labelList, temperatureData, humidityData) {
       ]
     },
     options: {
+      interaction: {
+        intersect: false,
+        mode: "nearest",
+      },
       plugins: {
         legend: {
           display: true
-        }
+        },
       },
       responsive: true,
       maintainAspectRatio: false,
