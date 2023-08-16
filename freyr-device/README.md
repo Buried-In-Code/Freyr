@@ -16,7 +16,7 @@ Collects temperature and humidity readings and sends them to Freyr.
 2. Download and load the [Micropython uf2](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html) onto your Pico.
 3. Install [mpremote](https://pypi.org/project/mpremote/).
 4. Install external dependencies:
-    - `mpremote mip install dht`
-    - `mpremote mip install urequests`
+   - `mpremote mip install dht`
+   - `mpremote mip install urequests`
 5. Copy the config file to your device: `mpremote cp config.py :`
 6. Copy the main file to your device: `mpremote cp main.py :`

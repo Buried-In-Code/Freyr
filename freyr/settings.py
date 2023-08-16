@@ -33,19 +33,19 @@ class WebsiteSettings(SettingsModel):
 
 class _Settings(SettingsModel):
     _filepath: ClassVar[Path] = get_config_root() / "settings.toml"
-    _instance: ClassVar["_Settings"] = None
+    _instance: ClassVar[Self] = None
     database: DatabaseSettings = DatabaseSettings()
     website: WebsiteSettings = WebsiteSettings()
 
     @classmethod
-    def load(cls) -> Self:
+    def load(cls: Self) -> Self:
         if not cls._filepath.exists():
             _Settings().save()
         with cls._filepath.open("rb") as stream:
             content = tomlreader.load(stream)
         return _Settings(**content)
 
-    def save(self) -> Self:
+    def save(self: Self) -> Self:
         with self._filepath.open("wb") as stream:
             content = self.model_dump(by_alias=False)
             tomlwriter.dump(content, stream)

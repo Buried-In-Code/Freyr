@@ -1,5 +1,4 @@
 import gc
-from config import base_url, device, password, ssid
 from machine import WDT, Pin
 from network import STA_IF, WLAN
 from time import sleep
@@ -7,6 +6,8 @@ from time import sleep
 # External Libraries
 import dht
 import urequests
+
+from config import base_url, device, password, ssid
 
 watchdog = WDT(timeout=8000)  # 8 Seconds
 led = Pin("LED", Pin.OUT)
@@ -31,39 +32,36 @@ def connect():
 
 
 def collect_measurements():
-    print("Taking measurements")
     try:
         sensor.measure()
         temperature = sensor.temperature()
         humidity = sensor.humidity()
         send_results(temperature=temperature, humidity=humidity)
     except Exception as err:
-        print("Faild to read DHT22 sensor:", err)
-        led.off()
+        print("Failed to read DHT22 sensor:", err)
+        led.on()
         send_error(error=err)
 
 
 def send_results(temperature, humidity):
-    print("Sending results")
     body = {"device": device, "temperature": temperature, "humidity": humidity}
     response = urequests.post(url=base_url + "/api/readings", json=body, headers=headers)
     if response.status_code != 204:
         print(f"Failed to connect: {response.text}")
-        led.off()
+        led.on()
 
 
 def send_error(error):
-    print("Sending error")
-    body = {"error": str(error)}
+    body = {"device": device, "error": str(error)}
     response = urequests.post(url=base_url + "/api/readings/error", json=body, headers=headers)
     if response.status_code != 204:
         print(f"Failed to connect: {response.text}")
-        led.off()
+        led.on()
 
 
 ip = connect()
 while True:
-    led.on()
+    led.off()
     collect_measurements()
     gc.collect()
     # Wait 5mins

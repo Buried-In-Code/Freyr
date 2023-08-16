@@ -1,7 +1,7 @@
 __all__ = ["router"]
 
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Body
 from pony.orm import db_session
@@ -26,15 +26,20 @@ def add_reading(reading: NewReading) -> None:
             device = Device(name=reading.device)
         Reading(
             device=device,
-            timestamp=datetime.fromisoformat(datetime.now().isoformat(timespec="seconds")),
+            timestamp=datetime.fromisoformat(
+                datetime.now(tz=UTC).astimezone().isoformat(timespec="seconds"),
+            ),
             temperature=reading.temperature,
             humidity=reading.humidity,
         )
 
 
 @reading_router.post(path="/error", status_code=204)
-def device_error(error: str = Body(embed=True)) -> None:
-    LOGGER.error(error)
+def device_error(
+    device: str = Body(embed=True, default="Unknown"),
+    error: str = Body(embed=True),
+) -> None:
+    LOGGER.error("%s - %s", device, error)
 
 
 @reading_router.get(path="")
