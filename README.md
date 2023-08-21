@@ -18,16 +18,19 @@ Collects readings using Raspberry Pi Pico W and a DHT22 Sensor, _See [freyr-devi
 ## Installation
 
 ### From Github
+
 1. Make sure you have a supported version of [Python](https://www.python.org/) installed: `python --version`
 2. Clone the repo: `git clone https://github.com/Buried-In-Code/Freyr`
 3. Install the project: `pip install .`
 
 ### Using Pipx
+
 ```sh
 pipx install git+https://github.com/Buried-In-Code/Freyr.git
 ```
 
 ## Execution
+
 ```sh
 python run.py
 ```
