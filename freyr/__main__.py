@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from http import HTTPStatus
 
 from fastapi import FastAPI, Request
@@ -56,7 +56,7 @@ async def http_exception_handler(request: Request, exc) -> JSONResponse:  # noqa
     return JSONResponse(
         status_code=status,
         content={
-            "timestamp": datetime.now(tz=timezone.utc).astimezone().isoformat(),
+            "timestamp": datetime.now(tz=UTC).astimezone().isoformat(),
             "status": f"{status.value}: {status.phrase}",
             "details": [exc.detail],
         },
@@ -77,7 +77,7 @@ async def validation_exception_handler(
     return JSONResponse(
         status_code=status,
         content={
-            "timestamp": datetime.now(tz=timezone.utc).astimezone().isoformat(),
+            "timestamp": datetime.now(tz=UTC).astimezone().isoformat(),
             "status": f"{status.value}: {status.phrase}",
             "details": details,
         },

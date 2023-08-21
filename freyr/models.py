@@ -4,7 +4,6 @@ __all__ = ["DeviceModel", "LatestModel", "SummaryModel", "ReadingModel", "NewRea
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -48,7 +47,7 @@ class DeviceModel(BaseModel):
 
 class LatestModel(BaseModel):
     name: str
-    reading: Optional[ReadingModel] = None  # noqa: UP007
+    reading: ReadingModel | None = None
 
     def __lt__(self: LatestModel, other) -> int:  # noqa: ANN001
         if not isinstance(other, LatestModel):
