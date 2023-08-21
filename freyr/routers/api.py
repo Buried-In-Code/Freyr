@@ -28,10 +28,10 @@ def add_reading(reading: NewReading):  # noqa: ANN202
             device = Device(name=reading.device)
         Reading(
             device=device,
-            timestamp=datetime.fromisoformat(
+            _timestamp=datetime.fromisoformat(
                 datetime.now(tz=UTC).astimezone().isoformat(timespec="seconds"),
             ),
-            _temperature=reading.temperature,
+            temperature=reading.temperature,
             humidity=reading.humidity,
         )
 
