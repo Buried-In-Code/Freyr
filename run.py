@@ -4,7 +4,7 @@ from freyr.settings import Settings
 
 
 def main() -> None:
-    settings = Settings().save()
+    settings = Settings.load().save()
 
     uvicorn.run(
         "freyr.__main__:app",

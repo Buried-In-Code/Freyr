@@ -1,13 +1,17 @@
 __all__ = ["Settings"]
 
-import tomllib as tomlreader
 from pathlib import Path
-from typing import ClassVar, Self
+from typing import ClassVar
 
 import tomli_w as tomlwriter
 from pydantic import BaseModel
 
 from freyr import get_config_root
+
+try:
+    import tomllib as tomlreader  # Python >= 3.11
+except ModuleNotFoundError:
+    import tomli as tomlreader  # Python < 3.11
 
 
 class SettingsModel(
@@ -31,28 +35,21 @@ class WebsiteSettings(SettingsModel):
     reload: bool = False
 
 
-class _Settings(SettingsModel):
+class Settings(SettingsModel):
     _filepath: ClassVar[Path] = get_config_root() / "settings.toml"
-    _instance: ClassVar[Self] = None
     database: DatabaseSettings = DatabaseSettings()
     website: WebsiteSettings = WebsiteSettings()
 
-    @classmethod
-    def load(cls: Self) -> Self:
-        if not cls._filepath.exists():
-            _Settings().save()
-        with cls._filepath.open("rb") as stream:
+    @staticmethod
+    def load() -> "Settings":
+        if not Settings._filepath.exists():
+            Settings().save()
+        with Settings._filepath.open("rb") as stream:
             content = tomlreader.load(stream)
-        return _Settings(**content)
+        return Settings(**content)
 
-    def save(self: Self) -> Self:
+    def save(self: "Settings") -> "Settings":
         with self._filepath.open("wb") as stream:
             content = self.model_dump(by_alias=False)
             tomlwriter.dump(content, stream)
         return self
-
-
-def Settings() -> _Settings:  # noqa: N802
-    if _Settings._instance is None:
-        _Settings._instance = _Settings.load()
-    return _Settings._instance

@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 __all__ = ["router"]
 
 import logging
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+from typing import Optional
 
 from fastapi import APIRouter, Body
 from pony.orm import db_session
@@ -19,7 +22,7 @@ reading_router = APIRouter(prefix="/readings", tags=["Reading"])
 
 
 @reading_router.post(path="", status_code=204)
-def add_reading(reading: NewReading) -> None:
+def add_reading(reading: NewReading):  # noqa: ANN202
     with db_session:
         device = Device.get(name=reading.device)
         if not device:
@@ -27,7 +30,7 @@ def add_reading(reading: NewReading) -> None:
         Reading(
             device=device,
             timestamp=datetime.fromisoformat(
-                datetime.now(tz=UTC).astimezone().isoformat(timespec="seconds"),
+                datetime.now(tz=timezone.utc).astimezone().isoformat(timespec="seconds"),
             ),
             temperature=reading.temperature,
             humidity=reading.humidity,
@@ -35,15 +38,15 @@ def add_reading(reading: NewReading) -> None:
 
 
 @reading_router.post(path="/error", status_code=204)
-def device_error(
+def device_error(  # noqa: ANN202
     device: str = Body(embed=True, default="Unknown"),
     error: str = Body(embed=True),
-) -> None:
+):
     LOGGER.error("%s - %s", device, error)
 
 
 @reading_router.get(path="")
-def list_readings(name: str | None = None) -> list[DeviceModel]:
+def list_readings(name: Optional[str] = None) -> list[DeviceModel]:  # noqa: UP007
     with db_session:
         devices = Device.select()
         if name:
@@ -56,7 +59,7 @@ def list_readings(name: str | None = None) -> list[DeviceModel]:
 
 
 @reading_router.get(path="/current")
-def current_readings(name: str | None = None) -> list[LatestModel]:
+def current_readings(name: Optional[str] = None) -> list[LatestModel]:  # noqa: UP007
     with db_session:
         devices = Device.select()
         if name:

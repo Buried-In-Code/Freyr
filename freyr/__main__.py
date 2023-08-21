@@ -1,5 +1,5 @@
 import logging
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 
 from fastapi import FastAPI, Request
@@ -29,7 +29,7 @@ app = create_app()
 @app.on_event(event_type="startup")
 async def startup_event() -> None:
     setup_logging()
-    settings = Settings()
+    settings = Settings.load()
 
     LOGGER.info("Listening on %s:%s", settings.website.host, settings.website.port)
     LOGGER.info("%s v%s started", app.title, app.version)
@@ -56,7 +56,7 @@ async def http_exception_handler(request: Request, exc) -> JSONResponse:  # noqa
     return JSONResponse(
         status_code=status,
         content={
-            "timestamp": datetime.now(tz=UTC).astimezone().isoformat(),
+            "timestamp": datetime.now(tz=timezone.utc).astimezone().isoformat(),
             "status": f"{status.value}: {status.phrase}",
             "details": [exc.detail],
         },
@@ -77,7 +77,7 @@ async def validation_exception_handler(
     return JSONResponse(
         status_code=status,
         content={
-            "timestamp": datetime.now(tz=UTC).astimezone().isoformat(),
+            "timestamp": datetime.now(tz=timezone.utc).astimezone().isoformat(),
             "status": f"{status.value}: {status.phrase}",
             "details": details,
         },

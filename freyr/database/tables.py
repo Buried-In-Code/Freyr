@@ -2,7 +2,6 @@ __all__ = ["db", "Device", "Reading"]
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Self
 
 from pony.orm import Database, PrimaryKey, Required, Set, composite_key
 
@@ -18,13 +17,13 @@ class Device(db.Entity):
     name: str = Required(str, unique=True)
     readings: list["Reading"] = Set("Reading")
 
-    def to_model(self: Self) -> DeviceModel:
+    def to_model(self: "Device") -> DeviceModel:
         return DeviceModel(
             name=self.name,
             readings=sorted({x.to_model() for x in self.readings}, reverse=True),
         )
 
-    def to_latest(self: Self) -> LatestModel:
+    def to_latest(self: "Device") -> LatestModel:
         readings = sorted({x.to_model() for x in self.readings}, reverse=True)
         return LatestModel(
             name=self.name,
@@ -44,16 +43,16 @@ class Reading(db.Entity):
     composite_key(device, _timestamp)
 
     @property
-    def timestamp(self: Self) -> datetime:
+    def timestamp(self: "Reading") -> datetime:
         if isinstance(self._timestamp, str):
             return datetime.strptime(self._timestamp, "%Y-%m-%d %H:%M:%S%z").astimezone()
         return self._timestamp.astimezone()
 
     @timestamp.setter
-    def timestamp(self: Self, value: datetime) -> None:
+    def timestamp(self: "Reading", value: datetime) -> None:
         self._timestamp = value
 
-    def to_model(self: Self) -> ReadingModel:
+    def to_model(self: "Reading") -> ReadingModel:
         return ReadingModel(
             timestamp=self.timestamp,
             temperature=self.temperature,
