@@ -3,8 +3,7 @@ from __future__ import annotations
 __all__ = ["router"]
 
 import logging
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Body
 from pony.orm import db_session
@@ -30,9 +29,9 @@ def add_reading(reading: NewReading):  # noqa: ANN202
         Reading(
             device=device,
             timestamp=datetime.fromisoformat(
-                datetime.now(tz=timezone.utc).astimezone().isoformat(timespec="seconds"),
+                datetime.now(tz=UTC).astimezone().isoformat(timespec="seconds"),
             ),
-            temperature=reading.temperature,
+            _temperature=reading.temperature,
             humidity=reading.humidity,
         )
 
@@ -46,7 +45,7 @@ def device_error(  # noqa: ANN202
 
 
 @reading_router.get(path="")
-def list_readings(name: Optional[str] = None) -> list[DeviceModel]:  # noqa: UP007
+def list_readings(name: str | None = None) -> list[DeviceModel]:
     with db_session:
         devices = Device.select()
         if name:
@@ -59,7 +58,7 @@ def list_readings(name: Optional[str] = None) -> list[DeviceModel]:  # noqa: UP0
 
 
 @reading_router.get(path="/current")
-def current_readings(name: Optional[str] = None) -> list[LatestModel]:  # noqa: UP007
+def current_readings(name: str | None = None) -> list[LatestModel]:
     with db_session:
         devices = Device.select()
         if name:
