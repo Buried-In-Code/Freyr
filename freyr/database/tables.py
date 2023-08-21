@@ -37,11 +37,21 @@ class Reading(db.Entity):
 
     reading_id: int = PrimaryKey(int, auto=True)
     device: Device = Required(Device)
-    timestamp: datetime = Required(datetime)
+    _timestamp: datetime = Required(datetime, column="timestamp")
     temperature: Decimal = Required(Decimal)
     humidity: Decimal = Required(Decimal)
 
-    composite_key(device, timestamp)
+    composite_key(device, _timestamp)
+
+    @property
+    def timestamp(self: Self) -> datetime:
+        if isinstance(self._timestamp, str):
+            return datetime.strptime(self._timestamp, "%Y-%m-%d %H:%M:%S%z").astimezone()
+        return self._timestamp.astimezone()
+
+    @timestamp.setter
+    def timestamp(self: Self, value: datetime) -> None:
+        self._timestamp = value
 
     def to_model(self: Self) -> ReadingModel:
         return ReadingModel(
