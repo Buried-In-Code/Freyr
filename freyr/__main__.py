@@ -1,5 +1,5 @@
 import logging
-from datetime import UTC, datetime
+from datetime import datetime
 from http import HTTPStatus
 
 from fastapi import FastAPI, Request
@@ -7,10 +7,10 @@ from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from freyr import __version__, get_project_root, setup_logging
+from freyr import __version__, elapsed_timer, get_project_root, setup_logging
+from freyr.constants import constants
 from freyr.routers.api import router as api_router
 from freyr.routers.html import router as html_router
-from freyr.settings import Settings
 
 LOGGER = logging.getLogger("freyr")
 
@@ -29,9 +29,12 @@ app = create_app()
 @app.on_event(event_type="startup")
 async def startup_event() -> None:
     setup_logging()
-    settings = Settings.load()
 
-    LOGGER.info("Listening on %s:%s", settings.website.host, settings.website.port)
+    LOGGER.info(
+        "Listening on %s:%s",
+        constants.settings.website.host,
+        constants.settings.website.port,
+    )
     LOGGER.info("%s v%s started", app.title, app.version)
 
 
@@ -39,8 +42,9 @@ async def startup_event() -> None:
 async def logger_middleware(request: Request, call_next):  # noqa: ANN001, ANN201
     log_message = f"{request.method.upper():<7} {request.scope['path']}"
     LOGGER.debug(log_message)
-    response = await call_next(request)
-    log_message += f" - {response.status_code}"
+    with elapsed_timer() as elapsed:
+        response = await call_next(request)
+    log_message += f" - {response.status_code} => {elapsed():.2f}s"
     if response.status_code < 400:
         LOGGER.info(log_message)
     elif response.status_code < 500:
@@ -56,7 +60,7 @@ async def http_exception_handler(request: Request, exc) -> JSONResponse:  # noqa
     return JSONResponse(
         status_code=status,
         content={
-            "timestamp": datetime.now(tz=UTC).astimezone().isoformat(),
+            "timestamp": datetime.now().isoformat(),
             "status": f"{status.value}: {status.phrase}",
             "details": [exc.detail],
         },
@@ -77,8 +81,9 @@ async def validation_exception_handler(
     return JSONResponse(
         status_code=status,
         content={
-            "timestamp": datetime.now(tz=UTC).astimezone().isoformat(),
+            "timestamp": datetime.now().isoformat(),
             "status": f"{status.value}: {status.phrase}",
             "details": details,
         },
+        headers=exc.headers,
     )

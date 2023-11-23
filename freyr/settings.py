@@ -1,17 +1,14 @@
 __all__ = ["Settings"]
 
+import tomllib as tomlreader
+from enum import Enum
 from pathlib import Path
-from typing import ClassVar
+from typing import ClassVar, Self
 
 import tomli_w as tomlwriter
 from pydantic import BaseModel
 
 from freyr import get_config_root
-
-try:
-    import tomllib as tomlreader  # Python >= 3.11
-except ModuleNotFoundError:
-    import tomli as tomlreader  # Python < 3.11
 
 
 class SettingsModel(
@@ -25,8 +22,17 @@ class SettingsModel(
     pass
 
 
+class Source(str, Enum):
+    POSTGRES = "POSTGRES"
+    SQLITE = "SQLITE"
+
+
 class DatabaseSettings(SettingsModel):
+    host: str = ""
     name: str = "freyr.sqlite"
+    password: str = ""
+    source: Source = Source.SQLITE
+    user: str = ""
 
 
 class WebsiteSettings(SettingsModel):
@@ -40,15 +46,15 @@ class Settings(SettingsModel):
     database: DatabaseSettings = DatabaseSettings()
     website: WebsiteSettings = WebsiteSettings()
 
-    @staticmethod
-    def load() -> "Settings":
-        if not Settings._filepath.exists():
-            Settings().save()
-        with Settings._filepath.open("rb") as stream:
+    @classmethod
+    def load(cls: type[Self]) -> Self:
+        if not cls._filepath.exists():
+            cls().save()
+        with cls._filepath.open("rb") as stream:
             content = tomlreader.load(stream)
-        return Settings(**content)
+        return cls(**content)
 
-    def save(self: "Settings") -> "Settings":
+    def save(self: Self) -> Self:
         with self._filepath.open("wb") as stream:
             content = self.model_dump(by_alias=False)
             tomlwriter.dump(content, stream)

@@ -1,15 +1,15 @@
 {% macro select_number(label, name, value=0, options=[]) %}
-  <div class="field">
+<div class="field">
     <label class="label has-text-info">{{ label }}</label>
     <div class="control is-expanded">
-      <div class="select is-fullwidth">
-        <select name="{{ name }}" onchange="this.form.submit()">
-          <option value="0"{% if not value %} selected{% endif %}>{{ label }}</option>
-          {% for entry in options %}
-            <option value="{{ entry }}"{% if entry == value %}selected{% endif %}>{{ entry }}</option>
-          {% endfor %}
-        </select>
-      </div>
+        <div class="select is-fullwidth">
+            <select name="{{ name }}" onchange="this.form.submit()">
+                <option value="0"{% if not value %} selected{% endif %}>{{ label }}</option>
+                {% for entry in options %}
+                    <option value="{{ entry }}"{% if entry == value %}selected{% endif %}>{{ entry }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
-  </div>
+</div>
 {% endmacro %}
