@@ -1,0 +1,36 @@
+name: Publish
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  ghcr:
+    name: Publish to GHCR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Build and Push to GHCR
+        uses: tada5hi/action-docker-image-publish@v3
+  pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/freyr
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Setup dependencies
+        run: pip install build
+      - name: Build project
+        run: python -m build
+      - name: Publish project
+        uses: pypa/gh-action-pypi-publish@v1.8.10

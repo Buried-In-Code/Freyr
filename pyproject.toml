@@ -26,9 +26,14 @@ dependencies = [
   "tomli-w >= 1.0.0",
   "uvicorn >= 0.23.2"
 ]
-description = ""
+description = "Tracks temperature and humidity readings and graphs the results in a web dashboard."
 dynamic = ["version"]
-keywords = []
+keywords = [
+  "dht22",
+  "fastapi",
+  "micropython",
+  "pi-pico-w"
+]
 license = {text = "MIT"}
 name = "freyr"
 readme = "README.md"
