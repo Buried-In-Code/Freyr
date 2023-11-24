@@ -1,18 +1,16 @@
 import uvicorn
 
-from freyr.settings import Settings
+from freyr.constants import constants
 
 
 def main() -> None:
-    settings = Settings.load().save()
-
     uvicorn.run(
         "freyr.__main__:app",
-        host=settings.website.host,
-        port=settings.website.port,
+        host=constants.settings.website.host,
+        port=constants.settings.website.port,
         use_colors=True,
         server_header=False,
-        reload=settings.website.reload,
+        reload=constants.settings.website.reload,
         log_config=None,
     )
 

@@ -1,16 +1,29 @@
-from __future__ import annotations
-
 __all__ = ["router"]
 
 import logging
-from datetime import UTC, datetime
+from datetime import datetime
 
-from fastapi import APIRouter, Body
+from fastapi import APIRouter
 from pony.orm import db_session
 
+from freyr.constants import constants
 from freyr.database.tables import Device, Reading
-from freyr.models import DeviceModel, LatestModel, NewReading, ReadingModel, SummaryModel
+from freyr.models import DeviceModel, NewReading, SummaryModel
 from freyr.responses import ErrorResponse
+from freyr.utils import (
+    get_daily_avg_readings,
+    get_daily_high_readings,
+    get_daily_low_readings,
+    get_hourly_avg_readings,
+    get_hourly_high_readings,
+    get_hourly_low_readings,
+    get_monthly_avg_readings,
+    get_monthly_high_readings,
+    get_monthly_low_readings,
+    get_yearly_avg_readings,
+    get_yearly_high_readings,
+    get_yearly_low_readings,
+)
 
 LOGGER = logging.getLogger(__name__)
 router = APIRouter(
@@ -23,25 +36,14 @@ reading_router = APIRouter(prefix="/readings", tags=["Reading"])
 @reading_router.post(path="", status_code=204)
 def add_reading(reading: NewReading):  # noqa: ANN202
     with db_session:
-        device = Device.get(name=reading.device)
-        if not device:
-            device = Device(name=reading.device)
-        Reading(
+        device = Device.get(name=reading.device) or Device(name=reading.device)
+        reading = Reading(
             device=device,
-            _timestamp=datetime.fromisoformat(
-                datetime.now(tz=UTC).astimezone().isoformat(timespec="seconds"),
-            ),
+            timestamp=datetime.fromisoformat(datetime.now().isoformat(timespec="seconds")),
             temperature=reading.temperature,
             humidity=reading.humidity,
         )
-
-
-@reading_router.post(path="/error", status_code=204)
-def device_error(  # noqa: ANN202
-    device: str = Body(embed=True, default="Unknown"),
-    error: str = Body(embed=True),
-):
-    LOGGER.error("%s - %s", device, error)
+        constants.cache[device.name] = reading.to_model()
 
 
 @reading_router.get(path="")
@@ -58,7 +60,7 @@ def list_readings(name: str | None = None) -> list[DeviceModel]:
 
 
 @reading_router.get(path="/current")
-def current_readings(name: str | None = None) -> list[LatestModel]:
+def current_readings(name: str | None = None) -> list[DeviceModel]:
     with db_session:
         devices = Device.select()
         if name:
@@ -67,182 +69,98 @@ def current_readings(name: str | None = None) -> list[LatestModel]:
                 for x in devices
                 if x.name.casefold() in name.casefold() or name.casefold() in x.name.casefold()
             ]
-        return sorted({x.to_latest() for x in devices})
+        output = []
+        for device in devices:
+            if device.name in constants.cache:
+                temp = DeviceModel(name=device.name, readings=[constants.cache[device.name]])
+            else:
+                reading = sorted(device.readings)[-1].to_model()
+                constants.cache[device.name] = reading
+                temp = DeviceModel(name=device.name, readings=[reading])
+            output.append(temp)
+        return sorted(output)
 
 
 @reading_router.get(path="/yearly")
 def yearly_readings() -> list[SummaryModel]:
-    def to_yearly(readings: list[Reading]) -> tuple[list[ReadingModel], list[ReadingModel]]:
-        highs = {}
-        lows = {}
-        for entry in sorted(readings, key=lambda x: x.timestamp, reverse=True):
-            timestamp = datetime.fromisoformat(entry.timestamp.isoformat(timespec="seconds"))
-            key = timestamp.replace(second=0, minute=0, hour=0, day=1, month=1)
-            if key not in highs:
-                highs[key] = ReadingModel(
-                    timestamp=key,
-                    temperature=entry.temperature,
-                    humidity=entry.humidity,
-                )
-            if entry.temperature > highs[key].temperature:
-                highs[key].temperature = entry.temperature
-            if entry.humidity > highs[key].humidity:
-                highs[key].humidity = entry.humidity
-            if key not in lows:
-                lows[key] = ReadingModel(
-                    timestamp=key,
-                    temperature=entry.temperature,
-                    humidity=entry.humidity,
-                )
-            if entry.temperature < lows[key].temperature:
-                lows[key].temperature = entry.temperature
-            if entry.humidity < lows[key].humidity:
-                lows[key].humidity = entry.humidity
-        return sorted(highs.values()), sorted(lows.values())
-
     with db_session:
         output = set()
         for device in Device.select():
-            highs, lows = to_yearly(readings=device.readings)
-            output.add(SummaryModel(name=device.name, highs=highs, lows=lows))
+            output.add(
+                SummaryModel(
+                    name=device.name,
+                    highs=get_yearly_high_readings(entries=device.readings),
+                    averages=get_yearly_avg_readings(entries=device.readings),
+                    lows=get_yearly_low_readings(entries=device.readings),
+                ),
+            )
         return sorted(output)
 
 
 @reading_router.get(path="/monthly")
-def monthly_readings(year: int = 0) -> list[SummaryModel]:
-    def to_monthly(
-        readings: list[Reading],
-        year: int = 0,
-    ) -> tuple[list[ReadingModel], list[ReadingModel]]:
-        highs = {}
-        lows = {}
-        for entry in sorted(readings, key=lambda x: x.timestamp, reverse=True):
-            timestamp = datetime.fromisoformat(entry.timestamp.isoformat(timespec="seconds"))
-            key = timestamp.replace(second=0, minute=0, hour=0, day=1)
-            if year and key.year != year:
-                continue
-            if key not in highs:
-                highs[key] = ReadingModel(
-                    timestamp=key,
-                    temperature=entry.temperature,
-                    humidity=entry.humidity,
-                )
-            if entry.temperature > highs[key].temperature:
-                highs[key].temperature = entry.temperature
-            if entry.humidity > highs[key].humidity:
-                highs[key].humidity = entry.humidity
-            if key not in lows:
-                lows[key] = ReadingModel(
-                    timestamp=key,
-                    temperature=entry.temperature,
-                    humidity=entry.humidity,
-                )
-            if entry.temperature < lows[key].temperature:
-                lows[key].temperature = entry.temperature
-            if entry.humidity < lows[key].humidity:
-                lows[key].humidity = entry.humidity
-        return sorted(highs.values()), sorted(lows.values())
-
+def monthly_readings(*, year: int = 0) -> list[SummaryModel]:
     with db_session:
         output = set()
         for device in Device.select():
-            highs, lows = to_monthly(readings=device.readings, year=year)
-            output.add(SummaryModel(name=device.name, highs=highs, lows=lows))
+            output.add(
+                SummaryModel(
+                    name=device.name,
+                    highs=get_monthly_high_readings(entries=device.readings, year=year),
+                    averages=get_monthly_avg_readings(entries=device.readings, year=year),
+                    lows=get_monthly_low_readings(entries=device.readings, year=year),
+                ),
+            )
         return sorted(output)
 
 
 @reading_router.get(path="/daily")
-def daily_readings(year: int = 0, month: int = 0) -> list[SummaryModel]:
-    def to_daily(
-        readings: list[Reading],
-        year: int = 0,
-        month: int = 0,
-    ) -> tuple[list[ReadingModel], list[ReadingModel]]:
-        highs = {}
-        lows = {}
-        for entry in sorted(readings, key=lambda x: x.timestamp, reverse=True):
-            timestamp = datetime.fromisoformat(entry.timestamp.isoformat(timespec="seconds"))
-            key = timestamp.replace(second=0, minute=0, hour=0)
-            if year and key.year != year:
-                continue
-            if month and key.month != month:
-                continue
-            if key not in highs:
-                highs[key] = ReadingModel(
-                    timestamp=key,
-                    temperature=entry.temperature,
-                    humidity=entry.humidity,
-                )
-            if entry.temperature > highs[key].temperature:
-                highs[key].temperature = entry.temperature
-            if entry.humidity > highs[key].humidity:
-                highs[key].humidity = entry.humidity
-            if key not in lows:
-                lows[key] = ReadingModel(
-                    timestamp=key,
-                    temperature=entry.temperature,
-                    humidity=entry.humidity,
-                )
-            if entry.temperature < lows[key].temperature:
-                lows[key].temperature = entry.temperature
-            if entry.humidity < lows[key].humidity:
-                lows[key].humidity = entry.humidity
-        return sorted(highs.values()), sorted(lows.values())
-
+def daily_readings(*, year: int = 0, month: int = 0) -> list[SummaryModel]:
     with db_session:
         output = set()
         for device in Device.select():
-            highs, lows = to_daily(readings=device.readings, year=year, month=month)
-            output.add(SummaryModel(name=device.name, highs=highs, lows=lows))
+            output.add(
+                SummaryModel(
+                    name=device.name,
+                    highs=get_daily_high_readings(entries=device.readings, year=year, month=month),
+                    averages=get_daily_avg_readings(
+                        entries=device.readings,
+                        year=year,
+                        month=month,
+                    ),
+                    lows=get_daily_low_readings(entries=device.readings, year=year, month=month),
+                ),
+            )
         return sorted(output)
 
 
 @reading_router.get(path="/hourly")
-def hourly_readings(year: int = 0, month: int = 0, day: int = 0) -> list[SummaryModel]:
-    def to_hourly(
-        readings: list[Reading],
-        year: int = 0,
-        month: int = 0,
-        day: int = 0,
-    ) -> tuple[list[ReadingModel], list[ReadingModel]]:
-        highs = {}
-        lows = {}
-        for entry in sorted(readings, key=lambda x: x.timestamp, reverse=True):
-            timestamp = datetime.fromisoformat(entry.timestamp.isoformat(timespec="seconds"))
-            key = timestamp.replace(second=0, minute=0)
-            if year and key.year != year:
-                continue
-            if month and key.month != month:
-                continue
-            if day and key.day != day:
-                continue
-            if key not in highs:
-                highs[key] = ReadingModel(
-                    timestamp=key,
-                    temperature=entry.temperature,
-                    humidity=entry.humidity,
-                )
-            if entry.temperature > highs[key].temperature:
-                highs[key].temperature = entry.temperature
-            if entry.humidity > highs[key].humidity:
-                highs[key].humidity = entry.humidity
-            if key not in lows:
-                lows[key] = ReadingModel(
-                    timestamp=key,
-                    temperature=entry.temperature,
-                    humidity=entry.humidity,
-                )
-            if entry.temperature < lows[key].temperature:
-                lows[key].temperature = entry.temperature
-            if entry.humidity < lows[key].humidity:
-                lows[key].humidity = entry.humidity
-        return sorted(highs.values()), sorted(lows.values())
-
+def hourly_readings(*, year: int = 0, month: int = 0, day: int = 0) -> list[SummaryModel]:
     with db_session:
         output = set()
         for device in Device.select():
-            highs, lows = to_hourly(readings=device.readings, year=year, month=month, day=day)
-            output.add(SummaryModel(name=device.name, highs=highs, lows=lows))
+            output.add(
+                SummaryModel(
+                    name=device.name,
+                    highs=get_hourly_high_readings(
+                        entries=device.readings,
+                        year=year,
+                        month=month,
+                        day=day,
+                    ),
+                    averages=get_hourly_avg_readings(
+                        entries=device.readings,
+                        year=year,
+                        month=month,
+                        day=day,
+                    ),
+                    lows=get_hourly_low_readings(
+                        entries=device.readings,
+                        year=year,
+                        month=month,
+                        day=day,
+                    ),
+                ),
+            )
         return sorted(output)
 
 

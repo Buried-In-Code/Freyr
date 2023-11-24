@@ -1,64 +1,78 @@
-const unique = (arr) => [...new Set(arr)];
-const headers = {
+const HEADERS = {
   "Accept": "application/json; charset=UTF-8",
   "Content-Type": "application/json; charset=UTF-8",
 };
 
-function ready(fn) {
-  if (document.readyState !== 'loading') {
-    fn();
-    return;
-  }
-  document.addEventListener('DOMContentLoaded', fn);
+function ready(callback) {
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", callback);
+  else
+    callback();
 }
 
 function getCookie(cname) {
-  let name = cname + "=";
-  let decodedCookie = decodeURIComponent(document.cookie);
-  let ca = decodedCookie.split(';');
-  for(let i = 0; i <ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
-    }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
-    }
+  const name = cname + "=";
+  const cookies = decodeURIComponent(document.cookie).split(";");
+
+  for (const cookie of cookies) {
+    let _cookie = cookie.trim();
+    if (_cookie.indexOf(name) == 0)
+      return _cookie.substring(name.length);
   }
   return "";
 }
 
-function addLoading(caller){
-  let element = document.getElementById(caller);
+function addLoading(caller) {
+  const element = document.getElementById(caller);
   element.classList.add("is-loading");
 }
 
-function removeLoading(caller){
-  let element = document.getElementById(caller);
+function removeLoading(caller) {
+  const element = document.getElementById(caller);
   element.classList.remove("is-loading");
 }
 
-function setTheme(){
-  let darkCss = document.getElementById("dark-theme");
-  let lightCss = document.getElementById("light-theme");
-  let theme = getCookie("theme");
-  if (theme == "light"){
-    darkCss.disabled = true;
-    lightCss.disabled = false;
-  } else {
-    darkCss.disabled = false;
-    lightCss.disabled = true;
+function resetForm(page) {
+  window.location = page;
+}
+
+function setTheme() {
+  const darkCss = document.getElementById("dark-theme");
+  const lightCss = document.getElementById("light-theme");
+  const theme = getCookie("freyr_theme");
+
+  if (darkCss !== null && lightCss !== null) {
+    darkCss.disabled = theme == "dark";
+    lightCss.disabled = theme == "light";
   }
 }
 
-function changeTheme(){
-  let currentTheme = getCookie("theme");
-  let newTheme = "dark";
-  if (currentTheme == "dark")
-    newTheme = "light";
+function toggleTheme() {
+  const currentTheme = getCookie("freyr_theme");
+  const newTheme = currentTheme === "dark" ? "light" : "dark";
 
-  document.cookie = `theme=${newTheme};path=/;max-age=${60*60*24*30};SameSite=Strict`;
+  document.cookie = `freyr_theme=${newTheme}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Strict`;
   setTheme();
 }
 
 ready(setTheme);
+
+async function submitRequest(endpoint, method, body = {}) {
+  try {
+    const options = {
+      method: method,
+      headers: HEADERS,
+    };
+    if (method !== "GET")
+      options.body = JSON.stringify(body);
+
+    const response = await fetch(endpoint, options);
+
+    if (!response.ok)
+      throw response;
+    return response.status !== 204 ? response.json() : "";
+  } catch(error) {
+    alert(`${error.status} ${error.statusText}: ${await error.text()}`);
+    return null;
+  }
+}
