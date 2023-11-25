@@ -7,7 +7,7 @@ COPY static /app/static
 COPY templates /app/templates
 COPY pyproject.toml README.md run.py /app/
 
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir .[postgres]
 
 ENV XDG_CACHE_HOME /app/cache
 RUN mkdir -p $XDG_CACHE_HOME/freyr

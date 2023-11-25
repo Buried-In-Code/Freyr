@@ -20,7 +20,7 @@ from rich.traceback import install
 
 from freyr.console import CONSOLE
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 
 def get_cache_root() -> Path:
