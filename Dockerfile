@@ -18,4 +18,4 @@ RUN mkdir -p $XDG_DATA_HOME/freyr
 
 EXPOSE 25710
 
-CMD ["Freyr"]
+CMD ["python", "run.py"]
