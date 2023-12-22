@@ -1,7 +1,6 @@
 __all__ = ["router"]
 
-
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from pony.orm import db_session
@@ -14,57 +13,57 @@ templates = Jinja2Templates(directory=get_project_root() / "templates")
 
 
 @router.get("/", response_class=HTMLResponse)
-def current(request: Request) -> Response:
-    return templates.TemplateResponse("current.html.jinja", {"request": request})
+def dashboard(*, request: Request) -> Response:
+    with db_session:
+        return templates.TemplateResponse(
+            name="dashboard.html.jinja",
+            context={
+                "request": request,
+                "devices": sorted(x for x in Device.select()),
+            },
+        )
 
 
-@router.get("/historical", response_class=HTMLResponse)
-def historical(
+@router.get(path="/{device_id}", response_class=HTMLResponse)
+def device(
+    *,
+    device_id: int,
     request: Request,
-    year: int = 0,
-    month: int = 0,
-    day: int = 0,
+    year: int | None = None,
+    month: int | None = None,
+    day: int | None = None,
 ) -> Response:
-    def year_list() -> list[int]:
-        with db_session:
-            return sorted({y.timestamp.year for x in Device.select() for y in x.readings})
-
-    def month_list(year: int) -> list[int]:
-        with db_session:
-            return sorted(
-                {
-                    y.timestamp.month
-                    for x in Device.select()
-                    for y in x.readings
-                    if y.timestamp.year == year
+    with db_session:
+        resource = Device.get(id=device_id)
+        if not resource:
+            raise HTTPException(status_code=404, detail="Device not found.")
+        return templates.TemplateResponse(
+            name="device.html.jinja",
+            context={
+                "request": request,
+                "devices": sorted(x for x in Device.select()),
+                "resource": resource,
+                "options": {
+                    "years": sorted({x.timestamp.year for x in resource.readings}),
+                    "months": sorted(
+                        {x.timestamp.month for x in resource.readings if x.timestamp.year == year},
+                    )
+                    if year
+                    else [],
+                    "days": sorted(
+                        {
+                            x.timestamp.day
+                            for x in resource.readings
+                            if x.timestamp.year == year and x.timestamp.month == month
+                        },
+                    )
+                    if year and month
+                    else [],
                 },
-            )
-
-    def day_list(year: int, month: int) -> list[int]:
-        with db_session:
-            return sorted(
-                {
-                    y.timestamp.day
-                    for x in Device.select()
-                    for y in x.readings
-                    if y.timestamp.year == year and y.timestamp.month == month
+                "selected": {
+                    "year": year,
+                    "month": month,
+                    "day": day,
                 },
-            )
-
-    def device_list() -> list[str]:
-        with db_session:
-            return sorted(x.name for x in Device.select())
-
-    return templates.TemplateResponse(
-        "historical.html.jinja",
-        {
-            "request": request,
-            "year_list": year_list(),
-            "month_list": month_list(year=year) if year else [],
-            "day_list": day_list(year=year, month=month) if year and month else [],
-            "year": year,
-            "month": month,
-            "day": day,
-            "device_names": device_list(),
-        },
-    )
+            },
+        )

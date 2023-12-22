@@ -1,4 +1,4 @@
-__all__ = ["sqlite_filepath"]
+__all__ = []
 
 
 from freyr import get_data_root

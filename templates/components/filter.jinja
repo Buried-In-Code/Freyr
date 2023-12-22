@@ -1,0 +1,24 @@
+{% from "components/forms.jinja" import select_number %}
+
+{% macro filter_readings(reset_url, years=[], year_value=None, months=[], month_value=None, days=[], day_value=None) %}
+    <div class="box">
+        <h4 class="title is-4">Filter Readings</h4>
+        <form accept-charset="UTF-8" method="GET">
+            {{ select_number(label="Select Year", name="year", value=year_value, options=years) }}
+            {% if year_value %}
+                {{ select_number(label="Select Month", name="month", value=month_value, options=months) }}
+                {% if month_value %}
+                    {{ select_number(label="Select Day", name="day", value=day_value, options=days) }}
+                {% endif %}
+            {% endif %}
+            <div class="buttons is-centered">
+                <button class="button is-warning" onclick="resetForm({{ reset_url }})" type="button">
+                    <span class="icon">
+                        <i class="fa-solid fa-rotate"></i>
+                    </span>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </form>
+    </div>
+{% endmacro %}

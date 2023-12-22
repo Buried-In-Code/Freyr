@@ -1,0 +1,45 @@
+{% from "components/chart.jinja" import chart %}
+{% from "components/filter.jinja" import filter_readings %}
+
+{% extends "base.jinja" %}
+{% block title %}{{ resource.name }} Stats{% endblock %}
+{% block content %}
+    <div class="columns">
+        <div class="column is-one-quarter-tablet is-one-fifth-fullhd">
+            {{ filter_readings(reset_url="/" + resource.id|string, years=options["years"], year_value=selected["year"], months=options["months"], month_value=selected["month"], days=options["days"], day_value=selected["day"]) }}
+        </div>
+        <div class="column">
+            {% if selected["day"] %}
+                {{ chart(label="Hourly Stats", name="hourly-stats") }}
+            {% endif %}
+            {% if selected["month"] %}
+                {{ chart(label="Daily Stats", name="daily-stats") }}
+            {% endif %}
+            {% if selected["year"] %}
+                {{ chart(label="Monthly Stats", name="monthly-stats") }}
+            {% endif %}
+            {{ chart(label="Yearly Stats", name="yearly-stats") }}
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script src="https://cdn.jsdelivr.net/npm/jquery@^3.6" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@^4.2" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@^2.29" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1.0" type="text/javascript"></script>
+    <script src="/static/js/device.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      ready(() => {
+        loadYearlyReadings({{ resource.id }});
+        {% if selected["year"] %}
+          loadMonthlyReadings({{ resource.id }});
+          {% if selected["month"] %}
+            loadDailyReadings({{ resource.id }});
+            {% if selected["day"] %}
+              loadHourlyReadings({{ resource.id }});
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      });
+    </script>
+{% endblock %}
