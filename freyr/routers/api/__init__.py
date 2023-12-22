@@ -5,7 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from fastapi import APIRouter
-from pony.orm import db_session
+from pony.orm import db_session, flush
 from pydantic import BaseModel
 
 from freyr.constants import constants
@@ -37,4 +37,5 @@ def add_reading(reading: NewReading):  # noqa: ANN202
             temperature=reading.temperature,
             humidity=reading.humidity,
         )
-        constants.cache[device.name] = reading.to_model()
+        flush()
+        constants.cache[device.id] = reading.to_model()
