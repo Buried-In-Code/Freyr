@@ -13,7 +13,7 @@ class BaseReading(BaseModel):
 
 
 class Reading(BaseReading):
-    id: int  # noqa: A003
+    id: int
     timestamp: datetime
 
     def __lt__(self: Self, other) -> int:  # noqa: ANN001
@@ -31,7 +31,7 @@ class Reading(BaseReading):
 
 
 class ReadingEntry(BaseReading):
-    id: int  # noqa: A003
+    id: int
     timestamp: datetime
 
     def __lt__(self: Self, other) -> int:  # noqa: ANN001

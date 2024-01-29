@@ -45,20 +45,28 @@ def device(
                 "resource": resource,
                 "options": {
                     "years": sorted({x.timestamp.year for x in resource.readings}),
-                    "months": sorted(
-                        {x.timestamp.month for x in resource.readings if x.timestamp.year == year},
-                    )
-                    if year
-                    else [],
-                    "days": sorted(
-                        {
-                            x.timestamp.day
-                            for x in resource.readings
-                            if x.timestamp.year == year and x.timestamp.month == month
-                        },
-                    )
-                    if year and month
-                    else [],
+                    "months": (
+                        sorted(
+                            {
+                                x.timestamp.month
+                                for x in resource.readings
+                                if x.timestamp.year == year
+                            },
+                        )
+                        if year
+                        else []
+                    ),
+                    "days": (
+                        sorted(
+                            {
+                                x.timestamp.day
+                                for x in resource.readings
+                                if x.timestamp.year == year and x.timestamp.month == month
+                            },
+                        )
+                        if year and month
+                        else []
+                    ),
                 },
                 "selected": {
                     "year": year,

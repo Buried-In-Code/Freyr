@@ -26,7 +26,7 @@ class BaseDevice(BaseModel):
 
 class Device(BaseDevice):
     class Reading(BaseModel):
-        id: int  # noqa: A003
+        id: int
         timestamp: datetime
         temperature: Decimal
         humidity: Decimal
@@ -44,12 +44,12 @@ class Device(BaseDevice):
         def __hash__(self: Self) -> int:
             return hash((type(self), self.timestamp))
 
-    id: int  # noqa: A003
+    id: int
     readings: list[Reading] = Field(default_factory=list)
 
 
 class DeviceEntry(BaseDevice):
-    id: int  # noqa: A003
+    id: int
 
 
 class DeviceInput(BaseDevice):

@@ -15,7 +15,7 @@ db = Database()
 class Device(db.Entity):
     _table_ = "devices"
 
-    id: int = PrimaryKey(int, auto=True)  # noqa: A003
+    id: int = PrimaryKey(int, auto=True)
     name: str = Required(str, unique=True)
     readings: list["Reading"] = Set("Reading")
 
@@ -46,7 +46,7 @@ class Device(db.Entity):
 class Reading(db.Entity):
     _table_ = "readings"
 
-    id: int = PrimaryKey(int, auto=True)  # noqa: A003
+    id: int = PrimaryKey(int, auto=True)
     device: Device = Required(Device)
     timestamp: datetime = Required(datetime)
     temperature: Decimal = Required(Decimal)
