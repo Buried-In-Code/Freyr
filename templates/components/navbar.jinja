@@ -24,7 +24,7 @@
                       <span>Devices</span>
                   </a>
                   <div class="navbar-dropdown">
-                      {% for entry in devices %}
+                      {% for entry in devices | sort(attribute="name") %}
                           <a class="navbar-item" href="/{{ entry.id }}">
                               <span class="icon">
                                   <i class="fa-solid fa-chart-line"></i>

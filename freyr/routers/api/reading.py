@@ -68,6 +68,13 @@ def create_endpoint(*, device_id: int, body: ReadingInput) -> ReadingModel:
 def current_readings(*, device_id: int) -> ReadingModel:
     with db_session:
         device = get_device(device_id=device_id)
+        if not device.readings:
+            return ReadingModel(
+                id=-1,
+                timestamp=datetime.fromtimestamp(1),
+                temperature=-1,
+                humidity=-1
+            )
         if device.id in constants.cache:
             return constants.cache[device.id]
         reading = sorted(device.readings, key=lambda x: x.timestamp)[-1].to_model()
