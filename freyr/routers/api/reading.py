@@ -73,7 +73,7 @@ def current_readings(*, device_id: int) -> ReadingModel:
                 id=-1,
                 timestamp=datetime.fromtimestamp(1),
                 temperature=-1,
-                humidity=-1
+                humidity=-1,
             )
         if device.id in constants.cache:
             return constants.cache[device.id]
