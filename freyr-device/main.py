@@ -46,7 +46,7 @@ def collect_measurements():
             led.on()
 
 
-def send_results(temperature, humidity):
+def send_results(temperature: float, humidity: float):
     body = {"device": device, "temperature": temperature, "humidity": humidity}
     print(f"Sending request to {base_url}/api/readings")
     response = urequests.post(url=base_url + "/api/readings", json=body, headers=headers)
