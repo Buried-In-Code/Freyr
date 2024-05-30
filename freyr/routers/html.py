@@ -5,11 +5,11 @@ from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from pony.orm import db_session
 
-from freyr import get_project_root
+from freyr import get_project
 from freyr.database.tables import Device
 
 router = APIRouter(tags=["WebInterface"], include_in_schema=False)
-templates = Jinja2Templates(directory=get_project_root() / "templates")
+templates = Jinja2Templates(directory=get_project() / "templates")
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -17,10 +17,7 @@ def dashboard(*, request: Request) -> Response:
     with db_session:
         return templates.TemplateResponse(
             name="dashboard.html.jinja",
-            context={
-                "request": request,
-                "devices": sorted(x for x in Device.select()),
-            },
+            context={"request": request, "devices": sorted(x for x in Device.select())},
         )
 
 
@@ -51,7 +48,7 @@ def device(
                                 x.timestamp.month
                                 for x in resource.readings
                                 if x.timestamp.year == year
-                            },
+                            }
                         )
                         if year
                         else []
@@ -62,16 +59,12 @@ def device(
                                 x.timestamp.day
                                 for x in resource.readings
                                 if x.timestamp.year == year and x.timestamp.month == month
-                            },
+                            }
                         )
                         if year and month
                         else []
                     ),
                 },
-                "selected": {
-                    "year": year,
-                    "month": month,
-                    "day": day,
-                },
+                "selected": {"year": year, "month": month, "day": day},
             },
         )

@@ -72,8 +72,6 @@ async function submitRequest(endpoint, method, body = {}) {
       throw response;
     return response.status !== 204 ? response.json() : "";
   } catch(error) {
-    alert(error);
-//    alert(`${error.status} ${error.statusText}: ${await error.text()}`);
     return null;
   }
 }

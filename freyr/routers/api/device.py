@@ -12,8 +12,7 @@ from freyr.routers.api.reading import router as readings_router
 
 LOGGER = logging.getLogger(__name__)
 router = APIRouter(
-    prefix="/devices",
-    responses={422: {"description": "Validation error", "model": ErrorResponse}},
+    prefix="/devices", responses={422: {"description": "Validation error", "model": ErrorResponse}}
 )
 
 

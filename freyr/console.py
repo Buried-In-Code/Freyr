@@ -14,6 +14,6 @@ CONSOLE = Console(
             "logging.level.warning": "yellow",
             "logging.level.error": "bold red",
             "logging.level.critical": "bold magenta",
-        },
-    ),
+        }
+    )
 )

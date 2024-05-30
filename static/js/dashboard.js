@@ -60,7 +60,8 @@ async function getCurrentReadings() {
     noContent.remove();
 
   for (const device of response) {
-    const reading = await submitRequest(`/api/devices/${device.id}/readings/current`, "GET");
+    let reading = await submitRequest(`/api/devices/${device.id}/readings?limit=1`, "GET");
+    reading = reading ? reading[0] || null : null;
 
     if (reading !== null) {
       if (document.getElementById(device.name) == null)

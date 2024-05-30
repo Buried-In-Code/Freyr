@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Self
 
-from pony.orm import Database, PrimaryKey, Required, Set, composite_key
+from pony.orm import Database, Optional, PrimaryKey, Required, Set, composite_key
 
 from freyr.models.device import Device as DeviceModel, DeviceEntry
 from freyr.models.reading import Reading as ReadingModel, ReadingEntry
@@ -20,16 +20,13 @@ class Device(db.Entity):
     readings: list["Reading"] = Set("Reading")
 
     def to_entry_model(self: Self) -> DeviceEntry:
-        return DeviceEntry(
-            id=self.id,
-            name=self.name,
-        )
+        return DeviceEntry(id=self.id, name=self.name)
 
     def to_model(self: Self) -> DeviceModel:
         return DeviceModel(
             id=self.id,
             name=self.name,
-            readings=sorted(
+            readings=list(
                 {
                     DeviceModel.Reading(
                         id=x.id,
@@ -38,7 +35,7 @@ class Device(db.Entity):
                         humidity=x.humidity,
                     )
                     for x in self.readings
-                },
+                }
             ),
         )
 
@@ -49,8 +46,8 @@ class Reading(db.Entity):
     id: int = PrimaryKey(int, auto=True)
     device: Device = Required(Device)
     timestamp: datetime = Required(datetime)
-    temperature: Decimal = Required(Decimal)
-    humidity: Decimal = Required(Decimal)
+    temperature: Decimal | None = Optional(Decimal, nullable=True)
+    humidity: Decimal | None = Optional(Decimal, nullable=True)
 
     composite_key(device, timestamp)
 

@@ -1,7 +1,7 @@
 __all__ = []
 
 
-from freyr import get_data_root
+from freyr import get_data
 from freyr.constants import constants
 from freyr.database.tables import db
 from freyr.settings import Source
@@ -15,7 +15,7 @@ if constants.settings.database.source == Source.POSTGRES:
         database=constants.settings.database.name,
     )
 else:
-    filepath = get_data_root() / constants.settings.database.name
+    filepath = get_data() / constants.settings.database.name
     db.bind(provider="sqlite", filename=str(filepath), create_db=True)
 db.generate_mapping(create_tables=True)
 

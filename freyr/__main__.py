@@ -7,7 +7,7 @@ from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from freyr import __version__, elapsed_timer, get_project_root, setup_logging
+from freyr import __version__, elapsed_timer, get_project, setup_logging
 from freyr.constants import constants
 from freyr.routers.api import router as api_router
 from freyr.routers.html import router as html_router
@@ -17,7 +17,7 @@ LOGGER = logging.getLogger("freyr")
 
 def create_app() -> FastAPI:
     _app = FastAPI(title="Freyr", version=__version__)
-    _app.mount("/static", StaticFiles(directory=get_project_root() / "static"), name="static")
+    _app.mount("/static", StaticFiles(directory=get_project() / "static"), name="static")
     _app.include_router(html_router)
     _app.include_router(api_router)
     return _app
@@ -31,9 +31,7 @@ async def startup_event() -> None:
     setup_logging()
 
     LOGGER.info(
-        "Listening on %s:%s",
-        constants.settings.website.host,
-        constants.settings.website.port,
+        "Listening on %s:%s", constants.settings.website.host, constants.settings.website.port
     )
     LOGGER.info("%s v%s started", app.title, app.version)
 

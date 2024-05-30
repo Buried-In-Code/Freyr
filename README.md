@@ -3,17 +3,16 @@
 ![Python](https://img.shields.io/badge/Python-3.11-green?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-Beta-yellowgreen?style=flat-square)
 
-[![Hatch](https://img.shields.io/badge/Packaging-Hatch-4051b5?style=flat-square)](https://github.com/pypa/hatch)
+[![Rye](https://img.shields.io/badge/Packaging-Rye-informational?style=flat-square)](https://github.com/astral-sh/rye)
 [![Pre-Commit](https://img.shields.io/badge/Pre--Commit-Enabled-informational?style=flat-square&logo=pre-commit)](https://github.com/pre-commit/pre-commit)
-[![Black](https://img.shields.io/badge/Code--Style-Black-000000?style=flat-square)](https://github.com/psf/black)
-[![Ruff](https://img.shields.io/badge/Linter-Ruff-informational?style=flat-square)](https://github.com/charliermarsh/ruff)
+[![Ruff](https://img.shields.io/badge/Linter-Ruff-informational?style=flat-square)](https://github.com/astral-sh/ruff)
 
 [![Github - Version](https://img.shields.io/github/v/tag/Buried-In-Code/Freyr?logo=Github&label=Version&style=flat-square)](https://github.com/Buried-In-Code/Freyr/tags)
 [![Github - License](https://img.shields.io/github/license/Buried-In-Code/Freyr?logo=Github&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Freyr?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Freyr/graphs/contributors)
 
 Tracks temperature and humidity readings and graphs the results in a web dashboard.\
-Collects readings using Raspberry Pi Pico W and a DHT22 Sensor, _See [freyr-device](freyr-device/) for details._
+Collects readings using temperature sensors _See [PiicoDev Projects](https://github.com/Buried-In-Code/PiicoDev-Projects) or [Pico Projects](https://github.com/Buried-In-Code/Pico-Projects) for details._
 
 ## Usage
 

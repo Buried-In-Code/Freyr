@@ -10,8 +10,8 @@ from pydantic import BaseModel, Field
 class Summary(BaseModel):
     class Reading(BaseModel):
         timestamp: datetime
-        temperature: Decimal
-        humidity: Decimal
+        temperature: Decimal | None
+        humidity: Decimal | None
 
         def __lt__(self: Self, other) -> int:  # noqa: ANN001
             if not isinstance(other, Summary.Reading):

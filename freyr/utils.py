@@ -66,22 +66,22 @@ def year_grouping(value: datetime) -> datetime:
 
 
 def high_aggregation(key: datetime, values: list[Reading]) -> Summary.Reading:
-    temperature = max(x.temperature for x in values)
-    humidity = max(x.humidity for x in values)
+    temperature = max((x.temperature for x in values if x.temperature), default=None)
+    humidity = max((x.humidity for x in values if x.humidity), default=None)
     return Summary.Reading(timestamp=key, temperature=temperature, humidity=humidity)
 
 
 def average_aggregation(key: datetime, values: list[Reading]) -> Summary.Reading:
-    temperatures = [x.temperature for x in values]
-    temperature = round(sum(temperatures) / len(temperatures), 2)
-    humidities = [x.humidity for x in values]
-    humidity = round(sum(humidities) / len(humidities), 2)
+    temperatures = [x.temperature for x in values if x.temperature]
+    temperature = round(sum(temperatures) / len(temperatures), 2) if temperatures else None
+    humidities = [x.humidity for x in values if x.humidity]
+    humidity = round(sum(humidities) / len(humidities), 2) if humidities else None
     return Summary.Reading(timestamp=key, temperature=temperature, humidity=humidity)
 
 
 def low_aggregation(key: datetime, values: list[Reading]) -> Summary.Reading:
-    temperature = min(x.temperature for x in values)
-    humidity = min(x.humidity for x in values)
+    temperature = min((x.temperature for x in values if x.temperature), default=None)
+    humidity = min((x.humidity for x in values if x.humidity), default=None)
     return Summary.Reading(timestamp=key, temperature=temperature, humidity=humidity)
 
 
@@ -92,9 +92,7 @@ def get_hourly_high_readings(
     day: int | None = None,
 ) -> list[Summary.Reading]:
     entries = aggregate_entries(
-        entries=entries,
-        grouping=hour_grouping,
-        aggregation=high_aggregation,
+        entries=entries, grouping=hour_grouping, aggregation=high_aggregation
     )
     return filter_entries(entries=entries, year=year, month=month, day=day)
 
@@ -106,9 +104,7 @@ def get_hourly_avg_readings(
     day: int | None = None,
 ) -> list[Summary.Reading]:
     entries = aggregate_entries(
-        entries=entries,
-        grouping=hour_grouping,
-        aggregation=average_aggregation,
+        entries=entries, grouping=hour_grouping, aggregation=average_aggregation
     )
     return filter_entries(entries=entries, year=year, month=month, day=day)
 
@@ -120,84 +116,59 @@ def get_hourly_low_readings(
     day: int | None = None,
 ) -> list[Summary.Reading]:
     entries = aggregate_entries(
-        entries=entries,
-        grouping=hour_grouping,
-        aggregation=low_aggregation,
+        entries=entries, grouping=hour_grouping, aggregation=low_aggregation
     )
     return filter_entries(entries=entries, year=year, month=month, day=day)
 
 
 def get_daily_high_readings(
-    entries: list[Reading],
-    year: int | None = None,
-    month: int | None = None,
+    entries: list[Reading], year: int | None = None, month: int | None = None
 ) -> list[Summary.Reading]:
     entries = aggregate_entries(
-        entries=entries,
-        grouping=day_grouping,
-        aggregation=high_aggregation,
+        entries=entries, grouping=day_grouping, aggregation=high_aggregation
     )
     return filter_entries(entries=entries, year=year, month=month)
 
 
 def get_daily_avg_readings(
-    entries: list[Reading],
-    year: int | None = None,
-    month: int | None = None,
+    entries: list[Reading], year: int | None = None, month: int | None = None
 ) -> list[Summary.Reading]:
     entries = aggregate_entries(
-        entries=entries,
-        grouping=day_grouping,
-        aggregation=average_aggregation,
+        entries=entries, grouping=day_grouping, aggregation=average_aggregation
     )
     return filter_entries(entries=entries, year=year, month=month)
 
 
 def get_daily_low_readings(
-    entries: list[Reading],
-    year: int | None = None,
-    month: int | None = None,
+    entries: list[Reading], year: int | None = None, month: int | None = None
 ) -> list[Summary.Reading]:
-    entries = aggregate_entries(
-        entries=entries,
-        grouping=day_grouping,
-        aggregation=low_aggregation,
-    )
+    entries = aggregate_entries(entries=entries, grouping=day_grouping, aggregation=low_aggregation)
     return filter_entries(entries=entries, year=year, month=month)
 
 
 def get_monthly_high_readings(
-    entries: list[Reading],
-    year: int | None = None,
+    entries: list[Reading], year: int | None = None
 ) -> list[Summary.Reading]:
     entries = aggregate_entries(
-        entries=entries,
-        grouping=month_grouping,
-        aggregation=high_aggregation,
+        entries=entries, grouping=month_grouping, aggregation=high_aggregation
     )
     return filter_entries(entries=entries, year=year)
 
 
 def get_monthly_avg_readings(
-    entries: list[Reading],
-    year: int | None = None,
+    entries: list[Reading], year: int | None = None
 ) -> list[Summary.Reading]:
     entries = aggregate_entries(
-        entries=entries,
-        grouping=month_grouping,
-        aggregation=average_aggregation,
+        entries=entries, grouping=month_grouping, aggregation=average_aggregation
     )
     return filter_entries(entries=entries, year=year)
 
 
 def get_monthly_low_readings(
-    entries: list[Reading],
-    year: int | None = None,
+    entries: list[Reading], year: int | None = None
 ) -> list[Summary.Reading]:
     entries = aggregate_entries(
-        entries=entries,
-        grouping=month_grouping,
-        aggregation=low_aggregation,
+        entries=entries, grouping=month_grouping, aggregation=low_aggregation
     )
     return filter_entries(entries=entries, year=year)
 
@@ -208,9 +179,7 @@ def get_yearly_high_readings(entries: list[Reading]) -> list[Summary.Reading]:
 
 def get_yearly_avg_readings(entries: list[Reading]) -> list[Summary.Reading]:
     return aggregate_entries(
-        entries=entries,
-        grouping=year_grouping,
-        aggregation=average_aggregation,
+        entries=entries, grouping=year_grouping, aggregation=average_aggregation
     )
 
 

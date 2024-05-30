@@ -8,7 +8,7 @@ from typing import ClassVar, Self
 import tomli_w as tomlwriter
 from pydantic import BaseModel
 
-from freyr import get_config_root
+from freyr import get_config
 
 
 class SettingsModel(
@@ -42,7 +42,7 @@ class WebsiteSettings(SettingsModel):
 
 
 class Settings(SettingsModel):
-    _filepath: ClassVar[Path] = get_config_root() / "settings.toml"
+    _filepath: ClassVar[Path] = get_config() / "settings.toml"
     database: DatabaseSettings = DatabaseSettings()
     website: WebsiteSettings = WebsiteSettings()
 
