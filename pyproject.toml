@@ -43,7 +43,7 @@ requires-python = ">= 3.11"
 
 [project.optional-dependencies]
 postgres = [
-  "psycopg >= 3.1.19"
+  "psycopg2 >= 2.9.9"
 ]
 
 [project.scripts]
