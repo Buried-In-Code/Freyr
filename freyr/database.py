@@ -1,8 +1,9 @@
 from sqlmodel import Session, SQLModel, create_engine
 
 from freyr.constants import constants
+from freyr.settings import Source
 
-connect_args = {"check_same_thread": False}
+connect_args = {"check_same_thread": False} if constants.settings.database.source == Source.SQLITE else {}
 engine = create_engine(constants.settings.database.db_url, echo=False, connect_args=connect_args)
 
 
