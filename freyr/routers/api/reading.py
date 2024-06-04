@@ -6,7 +6,6 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from pony.orm import db_session, flush
 
-from freyr.constants import constants
 from freyr.database.tables import Device, Reading
 from freyr.models import Summary
 from freyr.models.reading import Reading as ReadingModel, ReadingEntry, ReadingInput
@@ -62,7 +61,6 @@ def create_endpoint(*, device_id: int, body: ReadingInput) -> ReadingModel:
             humidity=body.humidity,
         )
         flush()
-        constants.cache[device.id] = resource.to_model()
 
         return resource.to_model()
 
