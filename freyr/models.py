@@ -13,7 +13,22 @@ class Device(DeviceBase, table=True):
     __tablename__ = "devices"
 
     id: int | None = Field(default=None, primary_key=True)
-    readings: list["Reading"] = Relationship(back_populates="device")
+    readings: list["Reading"] = Relationship(
+        back_populates="device", sa_relationship_kwargs={"order_by": "Reading.timestamp.desc()"}
+    )
+
+    def __lt__(self: Self, other) -> int:  # noqa: ANN001
+        if not isinstance(other, Device):
+            raise NotImplementedError
+        return self.name < other.name
+
+    def __eq__(self: Self, other) -> bool:  # noqa: ANN001
+        if not isinstance(other, Device):
+            raise NotImplementedError
+        return self.name == other.name
+
+    def __hash__(self: Self) -> int:
+        return hash((type(self), self.name))
 
 
 class DeviceCreate(DeviceBase):

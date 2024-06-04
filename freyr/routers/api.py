@@ -2,9 +2,10 @@ __all__ = ["router"]
 
 import logging
 from datetime import datetime
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session, desc, select
+from sqlmodel import Session, select
 
 from freyr.database import get_session
 from freyr.models import (
@@ -41,15 +42,23 @@ router = APIRouter(
 @router.get(path="/devices", response_model=list[DevicePublic])
 def list_devices(
     *,
-    session: Session = Depends(get_session),
-    offset: int = 0,
-    limit: int = Query(default=100, le=100),
+    session: Annotated[Session, Depends(get_session)],
+    name: str | None = None,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
 ):
-    return session.exec(select(Device).offset(offset).limit(limit)).all()
+    query = select(Device)
+    if name:
+        query = query.where(Device.name == name)
+    query = query.offset(offset).limit(limit)
+    return sorted(session.exec(query).all())
 
 
 @router.post(path="/devices", status_code=201, response_model=DevicePublic)
-def create_device(*, session: Session = Depends(get_session), device: DeviceCreate):
+def create_device(*, session: Annotated[Session, Depends(get_session)], device: DeviceCreate):
+    if list_devices(session=session, name=device.name, limit=1):
+        raise HTTPException(status_code=409, detail="Device already exists")
+
     db_device = Device.model_validate(device)
     session.add(db_device)
     session.commit()
@@ -58,7 +67,7 @@ def create_device(*, session: Session = Depends(get_session), device: DeviceCrea
 
 
 @router.get(path="/devices/{device_id}", response_model=DevicePublic)
-def get_device(*, session: Session = Depends(get_session), device_id: int):
+def get_device(*, session: Annotated[Session, Depends(get_session)], device_id: int):
     device = session.get(Device, device_id)
     if not device:
         raise HTTPException(status_code=404, detail="Device not found.")
@@ -68,17 +77,20 @@ def get_device(*, session: Session = Depends(get_session), device_id: int):
 @router.get(path="/devices/{device_id}/readings", response_model=list[ReadingPublic])
 def list_device_readings(
     *,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
     device_id: int,
-    offset: int = 0,
-    limit: int = Query(default=100, le=100),
+    timestamp: datetime | None = None,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
 ):
-    return list_readings(session=session, device_id=device_id, offset=offset, limit=limit)
+    return list_readings(
+        session=session, device_id=device_id, timestamp=timestamp, offset=offset, limit=limit
+    )
 
 
 @router.post(path="/devices/{device_id}/readings", status_code=201, response_model=ReadingPublic)
 def create_device_reading(
-    *, session: Session = Depends(get_session), device_id: int, reading: ReadingCreate
+    *, session: Annotated[Session, Depends(get_session)], device_id: int, reading: ReadingCreate
 ):
     if reading.device_id is None:
         reading.device_id = device_id
@@ -89,7 +101,11 @@ def create_device_reading(
 
 @router.get(path="/devices/{device_id}/readings/yearly")
 def yearly_readings(
-    *, session: Session = Depends(get_session), device_id: int, limit: int = 100, offset: int = 0
+    *,
+    session: Annotated[Session, Depends(get_session)],
+    device_id: int,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
 ) -> Summary:
     readings = session.exec(select(Reading).where(Reading.device_id == device_id)).all()
     return Summary(
@@ -99,14 +115,14 @@ def yearly_readings(
     )
 
 
-@router.get(path="/monthly")
+@router.get(path="/devices/{device_id}/readings/monthly")
 def monthly_readings(
     *,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
     device_id: int,
     year: int | None = None,
-    limit: int = 100,
-    offset: int = 0,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
 ) -> Summary:
     readings = session.exec(select(Reading).where(Reading.device_id == device_id)).all()
     return Summary(
@@ -118,15 +134,15 @@ def monthly_readings(
     )
 
 
-@router.get(path="/daily")
+@router.get(path="/devices/{device_id}/readings/daily")
 def daily_readings(
     *,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
     device_id: int,
     year: int | None = None,
     month: int | None = None,
-    limit: int = 100,
-    offset: int = 0,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
 ) -> Summary:
     readings = session.exec(select(Reading).where(Reading.device_id == device_id)).all()
     return Summary(
@@ -142,16 +158,16 @@ def daily_readings(
     )
 
 
-@router.get(path="/hourly")
+@router.get(path="/devices/{device_id}/readings/hourly")
 def hourly_readings(
     *,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
     device_id: int,
     year: int | None = None,
     month: int | None = None,
     day: int | None = None,
-    limit: int = 100,
-    offset: int = 0,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
 ) -> Summary:
     readings = session.exec(select(Reading).where(Reading.device_id == device_id)).all()
     return Summary(
@@ -170,30 +186,31 @@ def hourly_readings(
 @router.get(path="/readings", response_model=list[ReadingPublic])
 def list_readings(
     *,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
     device_id: int | None = None,
-    offset: int = 0,
-    limit: int = Query(default=100, le=100),
+    timestamp: datetime | None = None,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
 ):
+    query = select(Reading)
     if device_id:
-        readings = session.exec(
-            select(Reading)
-            .where(Reading.device_id == device_id)
-            .order_by(desc(Reading.timestamp))
-            .offset(offset)
-            .limit(limit)
-        ).all()
-    else:
-        readings = session.exec(
-            select(Reading).order_by(desc(Reading.timestamp)).offset(offset).limit(limit)
-        ).all()
-    return readings
+        query = query.where(Reading.device_id == device_id)
+    if timestamp:
+        query = query.where(Reading.timestamp == timestamp)
+    query = query.offset(offset).limit(limit)
+    return sorted(session.exec(query).all(), reverse=True)
 
 
 @router.post(path="/readings", status_code=201, response_model=ReadingPublic)
-def create_reading(*, session: Session = Depends(get_session), reading: ReadingCreate):
+def create_reading(*, session: Annotated[Session, Depends(get_session)], reading: ReadingCreate):
     if reading.timestamp is None:
         reading.timestamp = datetime.fromisoformat(datetime.now().isoformat(timespec="seconds"))
+
+    if list_readings(
+        session=session, device_id=reading.device_id, timestamp=reading.timestamp, limit=1
+    ):
+        raise HTTPException(status_code=409, detail="Device Reading already exists")
+
     db_reading = Reading.model_validate(reading)
     session.add(db_reading)
     session.commit()

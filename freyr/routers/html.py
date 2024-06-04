@@ -1,5 +1,7 @@
 __all__ = ["router"]
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
@@ -10,11 +12,11 @@ from freyr.database import get_session
 from freyr.models import Device
 
 router = APIRouter(tags=["WebInterface"], include_in_schema=False)
-templates = Jinja2Templates(directory=get_project() / "templates")
+templates = Jinja2Templates(directory=str(get_project() / "templates"))
 
 
 @router.get("/", response_class=HTMLResponse)
-def dashboard(*, request: Request, session: Session = Depends(get_session)) -> Response:
+def dashboard(*, request: Request, session: Annotated[Session, Depends(get_session)]) -> Response:
     devices = session.exec(select(Device)).all()
     return templates.TemplateResponse(
         name="dashboard.html.jinja", context={"request": request, "devices": sorted(devices)}
@@ -25,7 +27,7 @@ def dashboard(*, request: Request, session: Session = Depends(get_session)) -> R
 def get_device(
     *,
     request: Request,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
     device_id: int,
     year: int | None = None,
     month: int | None = None,

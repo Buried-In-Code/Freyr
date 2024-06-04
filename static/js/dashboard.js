@@ -40,7 +40,7 @@ function calculateFeelsLike(temperature, humidity) {
   const temp = parseFloat(temperature);
   const hum = parseFloat(humidity) / 100;
   const pressure = hum * 6.105 * Math.exp((17.27 * temp) / (237.7 + temp));
-  return (temp + 0.33 * pressure - 4.00).toFixed(2);
+  return (temp + 0.33 * pressure - 4.00);
 }
 
 function updateColumn(name, reading) {
@@ -49,12 +49,12 @@ function updateColumn(name, reading) {
   const humidityLabel = document.getElementById(`${name}-humidity`);
   const feelsLabel = document.getElementById(`${name}-feels`);
 
+  const time = (reading === null || reading.timestamp === null) ? "null" : moment(reading.timestamp, "YYYY-MM-DD[T]hh:mm:ss").fromNow();
+  const temperature = (reading === null || reading.temperature === null) ? "null" : parseFloat(reading.temperature).toFixed(2);
+  const humidity = (reading === null || reading.humidity === null) ? "null" : parseFloat(reading.humidity).toFixed(2);
+  const feelsLike = (reading === null || reading.temperature === null || reading.humidity === null) ? "null" : calculateFeelsLike(reading.temperature, reading.humidity).toFixed(2);
 
-  const temperature = reading.temperature !== null ? parseFloat(reading.temperature).toFixed(2) : "null";
-  const humidity = reading.humidity !== null ? parseFloat(reading.humidity).toFixed(2) : "null";
-  const feelsLike = (reading.temperature !== null && reading.humidity !== null) ? calculateFeelsLike(reading.temperature, reading.humidity) : "null";
-
-  timeLabel.textContent = moment(reading.timestamp, "YYYY-MM-DD[T]hh:mm:ss").fromNow();
+  timeLabel.textContent = time;
   temperatureLabel.textContent = `${temperature}°C`;
   humidityLabel.textContent = `${humidity}%`;
   feelsLabel.textContent = `${feelsLike}°C`;
@@ -75,11 +75,8 @@ async function getCurrentReadings() {
     const readings = await submitRequest(`/api/devices/${device.id}/readings?limit=1`, "GET");
     const reading = readings ? readings[0] || null : null;
 
-    if (reading) {
-      if (!document.getElementById(device.name))
-        createColumn(device.name);
-      updateColumn(device.name, reading);
-    } else
-      createNoContent();
+    if (!document.getElementById(device.name))
+      createColumn(device.name);
+    updateColumn(device.name, reading);
   }
 }
