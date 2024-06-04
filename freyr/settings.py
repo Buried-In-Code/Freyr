@@ -37,7 +37,7 @@ class DatabaseSettings(SettingsModel):
     @property
     def db_url(self: Self) -> str:
         if self.source == Source.POSTGRES:
-            return f"postgres+psycopg://{self.user}:{self.password}@{self.host}/{self.name}"
+            return f"postgresql+psycopg://{self.user}:{self.password}@{self.host}/{self.name}"
         return f"sqlite:///{self.name}"
 
 

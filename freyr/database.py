@@ -2,9 +2,6 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from freyr.constants import constants
 
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
-
 connect_args = {"check_same_thread": False}
 engine = create_engine(constants.settings.database.db_url, echo=False, connect_args=connect_args)
 
