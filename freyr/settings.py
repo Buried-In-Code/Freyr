@@ -34,6 +34,12 @@ class DatabaseSettings(SettingsModel):
     source: Source = Source.SQLITE
     user: str = ""
 
+    @property
+    def db_url(self: Self) -> str:
+        if self.source == Source.POSTGRES:
+            return f"postgres+psycopg://{self.user}:{self.password}@{self.host}/{self.name}"
+        return f"sqlite:///{self.name}"
+
 
 class WebsiteSettings(SettingsModel):
     host: str = "127.0.0.1"

@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from freyr import __version__, elapsed_timer, get_project, setup_logging
 from freyr.constants import constants
+from freyr.database import create_db_and_tables
 from freyr.routers.api import router as api_router
 from freyr.routers.html import router as html_router
 
@@ -29,6 +30,8 @@ app = create_app()
 @app.on_event(event_type="startup")
 async def startup_event() -> None:
     setup_logging()
+
+    create_db_and_tables()
 
     LOGGER.info(
         "Listening on %s:%s", constants.settings.website.host, constants.settings.website.port
