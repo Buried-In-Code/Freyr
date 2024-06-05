@@ -1,4 +1,6 @@
-FROM python:3.11
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y tzdata
 
 WORKDIR /app
 
@@ -8,6 +10,9 @@ COPY templates /app/templates
 COPY pyproject.toml README.md run.py /app/
 
 RUN pip install --no-cache-dir .[postgres]
+
+ENV TZ Pacific/Auckland
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ENV XDG_CACHE_HOME /app/cache
 ENV XDG_CONFIG_HOME /app/config
