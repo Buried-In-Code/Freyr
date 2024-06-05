@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session, select
+from sqlmodel import Session, select, desc
 
 from freyr.database import get_session
 from freyr.models import (
@@ -50,8 +50,8 @@ def list_devices(
     query = select(Device)
     if name:
         query = query.where(Device.name == name)
-    query = query.offset(offset).limit(limit)
-    return sorted(session.exec(query).all())
+    query = query.order_by(Device.name).offset(offset).limit(limit)
+    return session.exec(query).all()
 
 
 @router.post(path="/devices", status_code=201, response_model=DevicePublic)
@@ -197,8 +197,8 @@ def list_readings(
         query = query.where(Reading.device_id == device_id)
     if timestamp:
         query = query.where(Reading.timestamp == timestamp)
-    query = query.offset(offset).limit(limit)
-    return sorted(session.exec(query).all(), reverse=True)
+    query = query.order_by(desc(Reading.timestamp)).offset(offset).limit(limit)
+    return session.exec(query).all()
 
 
 @router.post(path="/readings", status_code=201, response_model=ReadingPublic)

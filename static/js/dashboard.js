@@ -1,3 +1,5 @@
+var DateTime = luxon.DateTime;
+
 async function appendToContent(content) {
   document.getElementById("content").insertAdjacentHTML("beforeend", content);
 }
@@ -49,7 +51,7 @@ function updateColumn(name, reading) {
   const humidityLabel = document.getElementById(`${name}-humidity`);
   const feelsLabel = document.getElementById(`${name}-feels`);
 
-  const time = (reading === null || reading.timestamp === null) ? "null" : moment(reading.timestamp, "YYYY-MM-DD[T]hh:mm:ss").fromNow();
+  const time = (reading === null || reading.timestamp === null) ? "null" : DateTime.fromISO(reading.timestamp).toRelative();
   const temperature = (reading === null || reading.temperature === null) ? "null" : parseFloat(reading.temperature).toFixed(2);
   const humidity = (reading === null || reading.humidity === null) ? "null" : parseFloat(reading.humidity).toFixed(2);
   const feelsLike = (reading === null || reading.temperature === null || reading.humidity === null) ? "null" : calculateFeelsLike(reading.temperature, reading.humidity).toFixed(2);
@@ -80,3 +82,6 @@ async function getCurrentReadings() {
     updateColumn(device.name, reading);
   }
 }
+
+ready(getCurrentReadings);
+setInterval(getCurrentReadings, 1000 * 30); // Wait 30s

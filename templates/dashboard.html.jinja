@@ -4,10 +4,6 @@
     <div class="columns is-centered is-multiline" id="content"></div>
 {% endblock %}
 {% block js %}
-    <script src="https://cdn.jsdelivr.net/npm/moment@^2.29"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4/build/global/luxon.min.js"></script>
     <script src="/static/js/dashboard.js" type="text/javascript"></script>
-    <script type="text/javascript">
-      ready(getCurrentReadings);
-      setInterval(getCurrentReadings, 1000 * 30); // Wait 30s
-    </script>
 {% endblock %}
