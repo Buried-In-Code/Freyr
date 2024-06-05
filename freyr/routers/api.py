@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session, select, desc
+from sqlmodel import Session, desc, select
 
 from freyr.database import get_session
 from freyr.models import (
