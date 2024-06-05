@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-RUN apt-get update && apt-get install -y tzdata
+RUN apt-get update && apt-get install -y tzdata libpq5
 
 WORKDIR /app
 
