@@ -68,7 +68,7 @@ starlette==0.37.2
     # via fastapi-slim
 tomli-w==1.0.0
     # via freyr
-typing-extensions==4.12.1
+typing-extensions==4.12.2
     # via fastapi-slim
     # via psycopg
     # via pydantic

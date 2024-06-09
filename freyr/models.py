@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Annotated, Self
+from typing import Annotated, Optional, Self
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -36,6 +36,11 @@ class DeviceCreate(DeviceBase):
 
 
 class DevicePublic(DeviceBase):
+    id: int
+    reading: Optional["ReadingPublic"] = None
+
+
+class DeviceWithReadings(DeviceBase):
     id: int
     readings: list["ReadingPublic"] = Field(default_factory=list)
 

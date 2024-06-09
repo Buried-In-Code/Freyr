@@ -12,6 +12,7 @@ from freyr.models import (
     Device,
     DeviceCreate,
     DevicePublic,
+    DeviceWithReadings,
     Reading,
     ReadingCreate,
     ReadingPublic,
@@ -51,10 +52,15 @@ def list_devices(
     if name:
         query = query.where(Device.name == name)
     query = query.order_by(Device.name).offset(offset).limit(limit)
-    return session.exec(query).all()
+    devices = session.exec(query).all()
+    output = []
+    for device in devices:
+        latest_reading = device.readings[0] if device.readings else None
+        output.append(DevicePublic(id=device.id, name=device.name, reading=latest_reading))
+    return output
 
 
-@router.post(path="/devices", status_code=201, response_model=DevicePublic)
+@router.post(path="/devices", status_code=201, response_model=DeviceWithReadings)
 def create_device(*, session: Annotated[Session, Depends(get_session)], device: DeviceCreate):
     if list_devices(session=session, name=device.name, limit=1):
         raise HTTPException(status_code=409, detail="Device already exists")
@@ -66,7 +72,7 @@ def create_device(*, session: Annotated[Session, Depends(get_session)], device: 
     return db_device
 
 
-@router.get(path="/devices/{device_id}", response_model=DevicePublic)
+@router.get(path="/devices/{device_id}", response_model=DeviceWithReadings)
 def get_device(*, session: Annotated[Session, Depends(get_session)], device_id: int):
     device = session.get(Device, device_id)
     if not device:
