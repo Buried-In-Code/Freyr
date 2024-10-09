@@ -4,6 +4,7 @@ import gg.jte.TemplateEngine
 import gg.jte.resolve.DirectoryCodeResolver
 import github.buriedincode.Utils.log
 import github.buriedincode.controllers.DeviceController
+import github.buriedincode.controllers.HtmlController
 import github.buriedincode.controllers.ReadingController
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.oshai.kotlinlogging.Level
@@ -53,11 +54,11 @@ object Freyr {
             it.router.caseInsensitiveRoutes = true
             it.router.apiBuilder {
                 path("/") {
-                    get(DeviceController::listPage)
-                    get("{device-id}", DeviceController::readPage)
+                    get(HtmlController::index)
+                    get("{device-id}", HtmlController::device)
                 }
                 path("/components") {
-                    get("devices", DeviceController::devices)
+                    get("device-readings", HtmlController::deviceReadings)
                 }
                 path("/api") {
                     path("devices") {

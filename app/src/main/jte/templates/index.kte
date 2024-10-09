@@ -1,7 +1,5 @@
 @import github.buriedincode.models.Device
-@param resources: List<Device>
-
-!{val devices = resources }
+@param devices: List<Device>
 
 <!DOCTYPE html>
 <html lang="en-GB" data-theme="dark">
@@ -17,7 +15,7 @@
 <body>
     <main class="section">
         <div class="container">
-            @template.components.htmx.devices(devices=devices)
+            @template.components.htmx.device-readings(readings=devices.mapNotNull { it.readings.lastOrNull() })
         </div>
     </main>
     @template.components.footer()

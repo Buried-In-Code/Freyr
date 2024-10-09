@@ -21,22 +21,6 @@ abstract class BaseController<T>(protected val entity: LongEntityClass<T>, prote
 
     protected open fun filterResources(ctx: Context): List<T> = entity.all().toList()
 
-    protected fun render(ctx: Context, template: String, model: Map<String, Any?> = emptyMap()) {
-        ctx.render("templates/$plural/$template.kte", model)
-    }
-
-    protected fun renderResource(ctx: Context, template: String, model: Map<String, Any?> = emptyMap()) {
-        render(ctx = ctx, template = template, model = mapOf("resource" to ctx.getResource()) + model)
-    }
-
-    open fun listPage(ctx: Context) = Utils.query {
-        render(ctx = ctx, template = "list", model = mapOf("resources" to filterResources(ctx = ctx)))
-    }
-
-    open fun readPage(ctx: Context) = Utils.query {
-        renderResource(ctx = ctx, template = "read")
-    }
-
     protected inline fun <reified I> Context.processInput(crossinline block: (I) -> Unit) = block(bodyAsClass(I::class.java))
 
     open fun list(ctx: Context): Unit = Utils.query {

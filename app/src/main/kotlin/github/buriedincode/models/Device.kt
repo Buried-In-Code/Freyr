@@ -33,6 +33,10 @@ class Device(id: EntityID<Long>) : LongEntity(id), IJson, Comparable<Device> {
     }
 
     override fun compareTo(other: Device): Int = comparator.compare(this, other)
+
+    override fun toString(): String {
+        return "Device(id=${id.value}, name=$name)"
+    }
 }
 
 object DeviceTable : LongIdTable(name = "devices") {

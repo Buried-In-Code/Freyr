@@ -43,6 +43,10 @@ class Reading(id: EntityID<Long>) : LongEntity(id), IJson, Comparable<Reading> {
     }
 
     override fun compareTo(other: Reading): Int = comparator.compare(this, other)
+
+    override fun toString(): String {
+        return "Reading(id=${id.value}, device=$device, timestamp=$timestamp, temperature=$temperature, humidity=$humidity)"
+    }
 }
 
 object ReadingTable : LongIdTable(name = "readings") {

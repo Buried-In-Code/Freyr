@@ -30,8 +30,4 @@ object DeviceController : BaseController<Device>(entity = Device, plural = "devi
             ctx.json(device.toJson(showAll = true))
         }
     }
-
-    fun devices(ctx: Context) = Utils.query {
-        ctx.render("components/htmx/devices.kte", mapOf("devices" to Device.all().toList()))
-    }
 }

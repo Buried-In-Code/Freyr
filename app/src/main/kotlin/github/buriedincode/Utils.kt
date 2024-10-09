@@ -4,10 +4,6 @@ import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.oshai.kotlinlogging.Level
 import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toJavaInstant
-import kotlinx.datetime.toJavaLocalDateTime
-import kotlinx.datetime.toLocalDateTime
 import nl.jacobras.humanreadable.HumanReadable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.DatabaseConfig
@@ -21,10 +17,7 @@ import java.nio.file.Paths
 import java.sql.Connection
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalAccessor
-import java.util.Locale
 import kotlin.io.path.div
 
 object Utils {
