@@ -1,0 +1,35 @@
+[versions]
+exposed = "0.55.0"
+jackson = "2.18.0"
+javalin = "6.3.0"
+jte = "3.1.13"
+
+[plugins]
+jte = { id = "gg.jte.gradle", version.ref = "jte" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.0.20" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "12.1.1" }
+shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
+versions = { id = "com.github.ben-manes.versions", version = "0.51.0" }
+
+[libraries]
+exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
+exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
+exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
+exposed-kotlin-datetime = { group = "org.jetbrains.exposed", name = "exposed-kotlin-datetime", version.ref = "exposed" }
+hoplite-core = { group = "com.sksamuel.hoplite", name = "hoplite-core", version = "2.8.2" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
+jackson-module-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
+jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
+javalin-core = { group = "io.javalin", name = "javalin", version.ref = "javalin"}
+javalin-rendering = { group = "io.javalin", name = "javalin-rendering", version.ref = "javalin" }
+jte-core = { group = "gg.jte", name = "jte", version.ref = "jte" }
+jte-kotlin = { group = "gg.jte", name = "jte-kotlin", version.ref = "jte" }
+kotlin-logging = { group = "io.github.oshai", name = "kotlin-logging-jvm", version = "7.0.0" }
+log4j2-slf4j2 = { group = "org.apache.logging.log4j", name = "log4j-slf4j2-impl", version = "2.24.1" }
+sqlite-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version = "3.46.1.3" }
+
+[bundles]
+exposed = ["exposed-core", "exposed-dao", "exposed-jdbc", "exposed-kotlin-datetime"]
+jackson = ["jackson-databind", "jackson-module-kotlin", "jackson-datatype-jsr310"]
+javalin = ["javalin-core", "javalin-rendering"]
+jte = ["jte-core", "jte-kotlin"]

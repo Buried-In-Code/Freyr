@@ -1,0 +1,18 @@
+html, body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body > footer {
+  margin-top: auto;
+}
+
+@font-face {
+  font-family: digital;
+  src: url("/static/fonts/DS-DIGIB.TTF");
+}
+
+.metric {
+  font-family: digital;
+}

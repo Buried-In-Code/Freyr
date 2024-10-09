@@ -1,0 +1,10 @@
+### Folders ###
+.gradle/
+.idea/
+.kotlin/
+build/
+jte-classes/
+logs/
+
+### Files ###
+*.sqlite
