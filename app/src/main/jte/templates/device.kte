@@ -1,0 +1,185 @@
+@import github.buriedincode.models.Device
+@param device: Device
+@param selected: Map<String, Int?> = emptyMap()
+@param yearly: Map<String, List<Any?>> = emptyMap()
+@param monthly: Map<String, List<Any?>> = emptyMap()
+@param daily: Map<String, List<Any?>> = emptyMap()
+@param hourly: Map<String, List<Any?>> = emptyMap()
+
+<!DOCTYPE html>
+<html lang="en-GB" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Freyr</title>
+    <link href="https://use.fontawesome.com/releases/v6.6.0/css/all.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
+</head>
+<body class="has-navbar-fixed-top">
+    @template.components.navbar()
+    <main class="section">
+        <div class="container">
+            <header class="block has-text-centered">
+                <h1 class="title is-1">${device.name}</h1>
+            </header>
+            <div class="columns is-centered">
+                <div class="column is-one-quarter-tablet is-one-fifth-fullhd">
+                    <div class="box has-background-text-soft is-shadowless">
+                        <h4 class="title is-4 has-text-text-bold">Filter</h4>
+                        <form accept-charset="UTF-8" method="GET">
+                            <div class="field">
+                                <label class="label has-text-info-bold" for="year">Year</label>
+                                <div class="control is-expanded">
+                                    <div class="select is-fullwidth">
+                                        <select class="input" id="year" name="year" onchange="this.form.submit();">
+                                            <option disabled selected="${selected["year"] == null}" value="">Select Year</option>
+                                            @for(entry in yearly["labels"]!!)
+                                                <option selected="${selected["year"] == entry as Int}" value="${entry}">${entry}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="tabs is-centered is-boxed">
+                        <ul>
+                            <li class="is-active"><a href="#temperature">Temperature</a></li>
+                            <li><a href="#humidity">Humidity</a></li>
+                        </ul>
+                    </div>
+                    <div id="temperature" class="tab-content">
+                        <div class="columns is-centered is-desktop">
+                            <div class="column">
+                                <div class="box has-background-text-soft has-text-centered">
+                                    <div class="chart-container">
+                                        <canvas height="500" id="yearly-temperature-graph"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            @if(monthly.isNotEmpty())
+                                <div class="column">
+                                    <div class="box has-background-text-soft has-text-centered">
+                                        <div class="chart-container">
+                                            <canvas height="500" id="monthly-temperature-graph"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                @if(daily.isNotEmpty())
+                                    <div class="column">
+                                        <div class="box has-background-text-soft has-text-centered">
+                                            <div class="chart-container">
+                                                <canvas height="500" id="daily-temperature-graph"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if(hourly.isNotEmpty())
+                                        <div class="column">
+                                            <div class="box has-background-text-soft has-text-centered">
+                                                <div class="chart-container">
+                                                    <canvas height="500" id="hourly-temperature-graph"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endif
+                            @endif
+                        </div>
+                    </div>
+                    <div id="humidity" class="tab-content is-hidden">
+                        <div class="columns is-centered is-desktop">
+                            <div class="column">
+                                <div class="box has-background-text-soft has-text-centered">
+                                    <div class="chart-container">
+                                        <canvas height="500" id="yearly-humidity-graph"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            @if(monthly.isNotEmpty())
+                                <div class="column">
+                                    <div class="box has-background-text-soft has-text-centered">
+                                        <div class="chart-container">
+                                            <canvas height="500" id="monthly-humidity-graph"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                @if(daily.isNotEmpty())
+                                    <div class="column">
+                                        <div class="box has-background-text-soft has-text-centered">
+                                            <div class="chart-container">
+                                                <canvas height="500" id="daily-humidity-graph"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if(hourly.isNotEmpty())
+                                        <div class="column">
+                                            <div class="box has-background-text-soft has-text-centered">
+                                                <div class="chart-container">
+                                                    <canvas height="500" id="hourly-humidity-graph"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endif
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    @template.components.footer()
+    <script src="/static/js/scripts.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@^3.6" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@^4.2" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@^2.29" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1.0" type="text/javascript"></script>
+    <script src="/static/js/chart.js" type="text/javascript"></script>
+    <script src="/static/js/bulma-tabs.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        ready(() => {
+            createGraph(
+                "yearly-temperature-graph",
+                [@for(entry in yearly["labels"]!!)${entry?.toString()},@endfor],
+                [
+                    createDataset(0, [@for(entry in yearly["tempRange"]!!)[${(entry as Pair<Double?, Double?>).first}, ${(entry as Pair<Double?, Double?>).second}],@endfor], "High/Low", "bar"),
+                    createDataset(1, [@for(entry in yearly["tempAvg"]!!)${entry?.toString()},@endfor], "Average", "line"),
+                ],
+                "Temperature (°C)"
+            );
+            createGraph(
+                "yearly-humidity-graph",
+                [@for(entry in yearly["labels"]!!)${entry?.toString()},@endfor],
+                [
+                    createDataset(0, [@for(entry in yearly["humidRange"]!!)[${(entry as Pair<Double?, Double?>).first}, ${(entry as Pair<Double?, Double?>).second}],@endfor], "High/Low", "bar"),
+                    createDataset(1, [@for(entry in yearly["humidAvg"]!!)${entry?.toString()},@endfor], "Average", "line")
+                ],
+                "Humidity (%)"
+            );
+            @if(monthly.isNotEmpty())
+                createGraph(
+                    "monthly-temperature-graph",
+                    [@for(entry in monthly["labels"]!!)${entry?.toString()},@endfor],
+                    [
+                        createDataset(0, [@for(entry in monthly["tempRange"]!!)[${(entry as Pair<Double?, Double?>).first}, ${(entry as Pair<Double?, Double?>).second}],@endfor], "High/Low", "bar"),
+                        createDataset(1, [@for(entry in monthly["tempAvg"]!!)${entry?.toString()},@endfor], "Average", "line"),
+                    ],
+                    "Temperature (°C)"
+                );
+                createGraph(
+                    "monthly-humidity-graph",
+                    [@for(entry in monthly["labels"]!!)${entry?.toString()},@endfor],
+                    [
+                        createDataset(0, [@for(entry in monthly["humidRange"]!!)[${(entry as Pair<Double?, Double?>).first}, ${(entry as Pair<Double?, Double?>).second}],@endfor], "High/Low", "bar"),
+                        createDataset(1, [@for(entry in monthly["humidAvg"]!!)${entry?.toString()},@endfor], "Average", "line")
+                    ],
+                    "Humidity (%)"
+                );
+            @endif
+        });
+    </script>
+</body>
+</html>

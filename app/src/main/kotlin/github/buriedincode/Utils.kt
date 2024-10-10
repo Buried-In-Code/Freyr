@@ -59,19 +59,6 @@ object Utils {
         }
     }
 
-    private fun getDayNumberSuffix(day: Int): String {
-        return if (day in 11..13) {
-            "th"
-        } else {
-            when (day % 10) {
-                1 -> "st"
-                2 -> "nd"
-                3 -> "rd"
-                else -> "th"
-            }
-        }
-    }
-
     internal fun KLogger.log(level: Level, message: () -> Any?) {
         when (level) {
             Level.TRACE -> this.trace(message)
