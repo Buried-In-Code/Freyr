@@ -1,18 +1,24 @@
 package github.buriedincode.controllers
 
 import github.buriedincode.Utils
+import github.buriedincode.Utils.titlecase
 import github.buriedincode.models.Device
 import github.buriedincode.models.Reading
 import github.buriedincode.models.ReadingTable
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
+import kotlinx.datetime.Month
+import kotlinx.datetime.number
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.avg
+import org.jetbrains.exposed.sql.kotlin.datetime.day
+import org.jetbrains.exposed.sql.kotlin.datetime.hour
 import org.jetbrains.exposed.sql.kotlin.datetime.month
 import org.jetbrains.exposed.sql.kotlin.datetime.year
 import org.jetbrains.exposed.sql.max
 import org.jetbrains.exposed.sql.min
+import org.jetbrains.exposed.sql.stringLiteral
 
 object HtmlController {
     @JvmStatic
@@ -23,126 +29,136 @@ object HtmlController {
     }
 
     private fun loadYearlyReadings(device: Device): Map<String, List<Any?>> {
-        val maxTemp = ReadingTable
-            .select(ReadingTable.timestampCol.year(), ReadingTable.temperatureCol.max(), ReadingTable.deviceCol)
-            .where { ReadingTable.deviceCol eq device.id }
+        val query = ReadingTable
+            .select(
+                ReadingTable.deviceCol,
+                ReadingTable.timestampCol.year(),
+                ReadingTable.temperatureCol.max(),
+                ReadingTable.temperatureCol.min(),
+                ReadingTable.temperatureCol.avg(),
+                ReadingTable.humidityCol.max(),
+                ReadingTable.humidityCol.min(),
+                ReadingTable.humidityCol.avg(),
+            ).where { ReadingTable.deviceCol eq device.id }
             .groupBy(ReadingTable.timestampCol.year())
-            .map { it[ReadingTable.timestampCol.year()] to it[ReadingTable.temperatureCol.max()] }
-        val minTemp = ReadingTable
-            .select(ReadingTable.timestampCol.year(), ReadingTable.temperatureCol.min(), ReadingTable.deviceCol)
-            .where { ReadingTable.deviceCol eq device.id }
-            .groupBy(ReadingTable.timestampCol.year())
-            .map { it[ReadingTable.timestampCol.year()] to it[ReadingTable.temperatureCol.min()] }
-        val avgTemp = ReadingTable
-            .select(ReadingTable.timestampCol.year(), ReadingTable.temperatureCol.avg(), ReadingTable.deviceCol)
-            .where { ReadingTable.deviceCol eq device.id }
-            .groupBy(ReadingTable.timestampCol.year())
-            .map { it[ReadingTable.timestampCol.year()] to it[ReadingTable.temperatureCol.avg()] }
-        val maxHumid = ReadingTable
-            .select(ReadingTable.timestampCol.year(), ReadingTable.humidityCol.max(), ReadingTable.deviceCol)
-            .where { ReadingTable.deviceCol eq device.id }
-            .groupBy(ReadingTable.timestampCol.year())
-            .map { it[ReadingTable.timestampCol.year()] to it[ReadingTable.humidityCol.max()] }
-        val minHumid = ReadingTable
-            .select(ReadingTable.timestampCol.year(), ReadingTable.humidityCol.min(), ReadingTable.deviceCol)
-            .where { ReadingTable.deviceCol eq device.id }
-            .groupBy(ReadingTable.timestampCol.year())
-            .map { it[ReadingTable.timestampCol.year()] to it[ReadingTable.humidityCol.min()] }
-        val avgHumid = ReadingTable
-            .select(ReadingTable.timestampCol.year(), ReadingTable.humidityCol.avg(), ReadingTable.deviceCol)
-            .where { ReadingTable.deviceCol eq device.id }
-            .groupBy(ReadingTable.timestampCol.year())
-            .map { it[ReadingTable.timestampCol.year()] to it[ReadingTable.humidityCol.avg()] }
+
         return mapOf(
-            "labels" to maxTemp
-                .map { it.first }
-                .plus(minTemp.map { it.first })
-                .plus(maxHumid.map { it.first })
-                .plus(minHumid.map { it.first })
-                .distinct(),
-            "tempRange" to maxTemp.map { it.second }.zip(minTemp.map { it.second }),
-            "tempAvg" to avgTemp.map { it.second },
-            "humidRange" to maxHumid.map { it.second }.zip(minHumid.map { it.second }),
-            "humidAvg" to avgHumid.map { it.second },
+            "labels" to query.map { it[ReadingTable.timestampCol.year()] }.distinct(),
+            "tempRange" to query.map { it[ReadingTable.temperatureCol.max()] to it[ReadingTable.temperatureCol.min()] },
+            "tempAvg" to query.map { it[ReadingTable.temperatureCol.avg()] },
+            "humidRange" to query.map { it[ReadingTable.humidityCol.max()] to it[ReadingTable.humidityCol.min()] },
+            "humidAvg" to query.map { it[ReadingTable.humidityCol.avg()] },
         )
     }
 
     private fun loadMonthlyReadings(device: Device, year: Int): Map<String, List<Any?>> {
-        val maxTemp = ReadingTable
+        val query = ReadingTable
             .select(
+                ReadingTable.deviceCol,
                 ReadingTable.timestampCol.year(),
                 ReadingTable.timestampCol.month(),
                 ReadingTable.temperatureCol.max(),
-                ReadingTable.deviceCol,
-            ).where { (ReadingTable.deviceCol eq device.id) and (ReadingTable.timestampCol.year() eq year) }
-            .groupBy(ReadingTable.timestampCol.month())
-            .map { it[ReadingTable.timestampCol.month()] to it[ReadingTable.temperatureCol.max()] }
-        val minTemp = ReadingTable
-            .select(
-                ReadingTable.timestampCol.year(),
-                ReadingTable.timestampCol.month(),
                 ReadingTable.temperatureCol.min(),
-                ReadingTable.deviceCol,
-            ).where { (ReadingTable.deviceCol eq device.id) and (ReadingTable.timestampCol.year() eq year) }
-            .groupBy(ReadingTable.timestampCol.month())
-            .map { it[ReadingTable.timestampCol.month()] to it[ReadingTable.temperatureCol.min()] }
-        val avgTemp = ReadingTable
-            .select(
-                ReadingTable.timestampCol.year(),
-                ReadingTable.timestampCol.month(),
                 ReadingTable.temperatureCol.avg(),
-                ReadingTable.deviceCol,
-            ).where { (ReadingTable.deviceCol eq device.id) and (ReadingTable.timestampCol.year() eq year) }
-            .groupBy(ReadingTable.timestampCol.month())
-            .map { it[ReadingTable.timestampCol.month()] to it[ReadingTable.temperatureCol.avg()] }
-        val maxHumid = ReadingTable
-            .select(
-                ReadingTable.timestampCol.year(),
-                ReadingTable.timestampCol.month(),
                 ReadingTable.humidityCol.max(),
-                ReadingTable.deviceCol,
-            ).where { (ReadingTable.deviceCol eq device.id) and (ReadingTable.timestampCol.year() eq year) }
-            .groupBy(ReadingTable.timestampCol.month())
-            .map { it[ReadingTable.timestampCol.month()] to it[ReadingTable.humidityCol.max()] }
-        val minHumid = ReadingTable
-            .select(
-                ReadingTable.timestampCol.year(),
-                ReadingTable.timestampCol.month(),
                 ReadingTable.humidityCol.min(),
-                ReadingTable.deviceCol,
-            ).where { (ReadingTable.deviceCol eq device.id) and (ReadingTable.timestampCol.year() eq year) }
+                ReadingTable.humidityCol.avg(),
+            ).where { (ReadingTable.deviceCol eq device.id) and (ReadingTable.timestampCol.year() eq stringLiteral(year.toString())) }
             .groupBy(ReadingTable.timestampCol.month())
-            .map { it[ReadingTable.timestampCol.month()] to it[ReadingTable.humidityCol.min()] }
-        val avgHumid = ReadingTable
+
+        return mapOf(
+            "labels" to query
+                .map { it[ReadingTable.timestampCol.month()] }
+                .map {
+                    Month.values()[it - 1].titlecase()
+                }.distinct(),
+            "tempRange" to query.map { it[ReadingTable.temperatureCol.max()] to it[ReadingTable.temperatureCol.min()] },
+            "tempAvg" to query.map { it[ReadingTable.temperatureCol.avg()] },
+            "humidRange" to query.map { it[ReadingTable.humidityCol.max()] to it[ReadingTable.humidityCol.min()] },
+            "humidAvg" to query.map { it[ReadingTable.humidityCol.avg()] },
+        )
+    }
+
+    private fun loadDailyReadings(device: Device, year: Int, month: Int): Map<String, List<Any?>> {
+        val query = ReadingTable
             .select(
+                ReadingTable.deviceCol,
                 ReadingTable.timestampCol.year(),
                 ReadingTable.timestampCol.month(),
+                ReadingTable.timestampCol.day(),
+                ReadingTable.temperatureCol.max(),
+                ReadingTable.temperatureCol.min(),
+                ReadingTable.temperatureCol.avg(),
+                ReadingTable.humidityCol.max(),
+                ReadingTable.humidityCol.min(),
                 ReadingTable.humidityCol.avg(),
-                ReadingTable.deviceCol,
-            ).where { (ReadingTable.deviceCol eq device.id) and (ReadingTable.timestampCol.year() eq year) }
-            .groupBy(ReadingTable.timestampCol.month())
-            .map { it[ReadingTable.timestampCol.month()] to it[ReadingTable.humidityCol.avg()] }
+            ).where {
+                (ReadingTable.deviceCol eq device.id) and (ReadingTable.timestampCol.year() eq stringLiteral(year.toString())) and
+                    (ReadingTable.timestampCol.month() eq stringLiteral(month.toString().padStart(2, '0')))
+            }.groupBy(ReadingTable.timestampCol.day())
+
         return mapOf(
-            "labels" to maxTemp
-                .map { it.first }
-                .plus(minTemp.map { it.first })
-                .plus(maxHumid.map { it.first })
-                .plus(minHumid.map { it.first })
-                .distinct(),
-            "tempRange" to maxTemp.map { it.second }.zip(minTemp.map { it.second }),
-            "tempAvg" to avgTemp.map { it.second },
-            "humidRange" to maxHumid.map { it.second }.zip(minHumid.map { it.second }),
-            "humidAvg" to avgHumid.map { it.second },
+            "labels" to query.map { it[ReadingTable.timestampCol.day()] }.distinct(),
+            "tempRange" to query.map { it[ReadingTable.temperatureCol.max()] to it[ReadingTable.temperatureCol.min()] },
+            "tempAvg" to query.map { it[ReadingTable.temperatureCol.avg()] },
+            "humidRange" to query.map { it[ReadingTable.humidityCol.max()] to it[ReadingTable.humidityCol.min()] },
+            "humidAvg" to query.map { it[ReadingTable.humidityCol.avg()] },
         )
+    }
+
+    private fun loadHourlyReadings(device: Device, year: Int, month: Int, day: Int): Map<String, List<Any?>> {
+        val query = ReadingTable
+            .select(
+                ReadingTable.deviceCol,
+                ReadingTable.timestampCol.year(),
+                ReadingTable.timestampCol.month(),
+                ReadingTable.timestampCol.day(),
+                ReadingTable.timestampCol.hour(),
+                ReadingTable.temperatureCol.max(),
+                ReadingTable.temperatureCol.min(),
+                ReadingTable.temperatureCol.avg(),
+                ReadingTable.humidityCol.max(),
+                ReadingTable.humidityCol.min(),
+                ReadingTable.humidityCol.avg(),
+            ).where {
+                (ReadingTable.deviceCol eq device.id) and (ReadingTable.timestampCol.year() eq stringLiteral(year.toString())) and
+                    (ReadingTable.timestampCol.month() eq stringLiteral(month.toString().padStart(2, '0'))) and
+                    (ReadingTable.timestampCol.day() eq stringLiteral(day.toString().padStart(2, '0')))
+            }.groupBy(ReadingTable.timestampCol.hour())
+
+        return mapOf(
+            "labels" to query.map { it[ReadingTable.timestampCol.hour()] }.distinct(),
+            "tempRange" to query.map { it[ReadingTable.temperatureCol.max()] to it[ReadingTable.temperatureCol.min()] },
+            "tempAvg" to query.map { it[ReadingTable.temperatureCol.avg()] },
+            "humidRange" to query.map { it[ReadingTable.humidityCol.max()] to it[ReadingTable.humidityCol.min()] },
+            "humidAvg" to query.map { it[ReadingTable.humidityCol.avg()] },
+        )
+    }
+
+    fun String.toMonthIntOrNull(): Int? {
+        return try {
+            Month.valueOf(this.uppercase()).number
+        } catch (iae: IllegalArgumentException) {
+            null
+        }
     }
 
     fun device(ctx: Context) = Utils.query {
         val device = ctx.pathParam("device-id").toLongOrNull()?.let(Device::findById) ?: throw NotFoundResponse("Device not found.")
-        val output = mutableMapOf<String, Any>("device" to device, "selected" to mapOf("year" to ctx.queryParam("year")?.toIntOrNull()))
+        val output = mutableMapOf<String, Any>(
+            "device" to device,
+            "selected" to mapOf("year" to ctx.queryParam("year")?.toIntOrNull(), "month" to ctx.queryParam("month"), "day" to ctx.queryParam("day")?.toIntOrNull()),
+        )
 
         output.put("yearly", loadYearlyReadings(device = device))
-        ctx.queryParam("year")?.toIntOrNull()?.let {
-            output.put("monthly", loadMonthlyReadings(device = device, year = it))
+        ctx.queryParam("year")?.toIntOrNull()?.let { year ->
+            output.put("monthly", loadMonthlyReadings(device = device, year = year))
+            ctx.queryParam("month")?.toMonthIntOrNull()?.let { month ->
+                output.put("daily", loadDailyReadings(device = device, year = year, month = month))
+                ctx.queryParam("day")?.toIntOrNull()?.let { day ->
+                    output.put("hourly", loadHourlyReadings(device = device, year = year, month = month, day = day))
+                }
+            }
         }
 
         ctx.render("templates/device.kte", output)

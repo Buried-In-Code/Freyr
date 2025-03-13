@@ -71,4 +71,5 @@ object ReadingTable : LongIdTable(name = "readings") {
 data class ReadingInput(
     val humidity: Double? = null,
     val temperature: Double? = null,
+    val timestamp: String? = null,
 )

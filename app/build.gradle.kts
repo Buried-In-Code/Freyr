@@ -54,7 +54,7 @@ jte {
 }
 
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-    version = "1.3.1"
+    version = "1.4.1"
 }
 
 tasks.jar {

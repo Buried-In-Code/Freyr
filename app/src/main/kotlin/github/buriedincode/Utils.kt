@@ -70,6 +70,10 @@ object Utils {
         }
     }
 
+    inline fun <reified T : Enum<T>> T.titlecase(): String = this.name.lowercase().split("_").joinToString(" ") {
+        it.replaceFirstChar(Char::uppercaseChar)
+    }
+
     internal fun <T> query(block: () -> T): T {
         val startTime = LocalDateTime.now()
         val transaction = transaction(transactionIsolation = Connection.TRANSACTION_SERIALIZABLE, db = DATABASE) {
