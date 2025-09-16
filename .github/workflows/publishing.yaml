@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup qemu
         uses: docker/setup-qemu-action@v3.0.0
       - name: Setup docker buildx
@@ -34,7 +34,7 @@ jobs:
           tags: |
             type=pep440,pattern={{version}}
       - name: Build and Push
-        uses: docker/build-push-action@v5.1.0
+        uses: docker/build-push-action@v6.18.0
         with:
           context: .
           push: true
